@@ -1,0 +1,7 @@
+.VidParser {
+    inline-size: inherit;
+}
+
+.VidParser video {
+    max-width: 100cqw;
+}
