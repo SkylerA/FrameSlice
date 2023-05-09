@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from "react";
-import VidParser from "@/components/VidParser";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ParseDetails } from "@/components/VidParser";
 import SelectionContainer from "@/components/SelectionContainer";
 import type { Box } from "@/components/SelectionContainer";
@@ -10,6 +9,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import useFFmpeg from "@/hooks/useFFmpeg";
 import CropFileLoader, { Json } from "./CropFileLoader";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
+import CropTable from "./CropTable";
 
 type Props = {};
 
@@ -54,6 +54,37 @@ function FramesParseObjToCrop(obj: FramesParseObj): Crop {
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
+  const [vidSrc, setVidSrc] = useState<string>("");
+  const [selecting, setSelecting] = useState<boolean>(false);
+  const [cropUrls, setCropUrls] = useState<string[]>([]);
+  const [cropData, setCropData] = useState<Crop[]>([]);
+
+  const editCropsCb = useCallback((crops: Crop[]) => {
+    setCropData(crops);
+  }, []);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [parseProgress, setParseProgress] = useState<number>(100);
+
+  const { width = 1, height = 1 } = useThrottledResizeObserver(500, videoRef);
+
+  const vidRatio = useMemo(() => {
+    return {
+      w_ratio: width / (videoRef.current?.videoWidth ?? width),
+      h_ratio: height / (videoRef.current?.videoHeight ?? height),
+    };
+  }, [
+    width,
+    videoRef.current?.videoWidth,
+    height,
+    videoRef.current?.videoHeight,
+  ]);
+
+  const details: ParseDetails = {
+    frameCount: 10,
+    startTime: 32,
+    frameRate: 1,
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo] = useFFmpeg();
 
@@ -68,8 +99,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     console.log(data);
 
     const file = videoRef.current?.src ?? "";
-    parseVideo(file, cropData, data, handleCropResults);
+    parseVideo(file, cropData, data, handleCropResults, ffmpegProgressCb);
   };
+
+  function ffmpegProgressCb(progress: { ratio: number }) {
+    setParseProgress(progress.ratio * 100);
+  }
 
   const handleCropResults = (files: string[], ffmpeg: FFmpeg) => {
     console.log(files);
@@ -102,36 +137,18 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     }
   }
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [cropData, setCropData] = useState<Crop[]>([]);
-  const [selecting, setSelecting] = useState<boolean>(false);
-  const [cropUrls, setCropUrls] = useState<string[]>([]);
-
-  const { width = 1, height = 1 } = useThrottledResizeObserver(500, videoRef);
-
-  const vidRatio = useMemo(() => {
-    return {
-      w_ratio: width / (videoRef.current?.videoWidth ?? width),
-      h_ratio: height / (videoRef.current?.videoHeight ?? height),
-    };
-  }, [
-    width,
-    videoRef.current?.videoWidth,
-    height,
-    videoRef.current?.videoHeight,
-  ]);
-
-  const details: ParseDetails = {
-    frameCount: 10,
-    startTime: 32,
-    frameRate: 1,
-  };
-
   const handleSelectionChange = (selections: Box[]) => {
     setCropData(selections as Crop[]);
   };
 
-  console.log(vidRatio);
+  function handleVideoSelected(e: React.ChangeEvent<HTMLInputElement>): void {
+    URL.revokeObjectURL(vidSrc);
+    const file = e.currentTarget.files?.[0];
+    if (file) {
+      // void parseVideo(file, tempCrops, {} as ParseDetails);
+      setVidSrc(URL.createObjectURL(file));
+    }
+  }
 
   return (
     <div className={styles.VidCropper}>
@@ -142,19 +159,18 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         showSelections
         ratio={vidRatio}
       >
-        <VidParser
-          videoRef={videoRef}
-          // cb={gg_classify}
-          // cb={football_ocr}
-          // cb={void ocr_parallel}
-          //   crops={cropData}
-          //   details={details}
-          controls={!selecting}
-        />
+        <video ref={videoRef} src={vidSrc} controls={!selecting} />
       </SelectionContainer>
 
       <div className={styles.settings}>
         <form onSubmit={handleSubmit(onCropSubmit)}>
+          <div>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={handleVideoSelected}
+            />
+          </div>
           <div>
             <label>
               Start Time
@@ -186,6 +202,9 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           </div>
 
           <input type="submit" value="Crop Video" />
+          {parseProgress > 0 && parseProgress < 100 && (
+            <progress className="ffmpeg-progress" value={parseProgress} />
+          )}
         </form>
 
         <div className="crop-controls">
@@ -198,9 +217,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
               onChange={(e) => setSelecting(e.currentTarget.checked)}
             />
           </label>
-          {cropData.map((crop, idx) => (
-            <div key={idx}>{JSON.stringify(crop)}</div>
-          ))}
+          <CropTable crops={cropData} editCb={editCropsCb} />
         </div>
       </div>
 

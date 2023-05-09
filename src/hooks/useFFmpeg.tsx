@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import type { FFmpeg, ProgressCallback } from "@ffmpeg/ffmpeg";
 
 const ffmpeg_init = {
   log: true,
@@ -100,20 +100,15 @@ export default function useFFmpeg() {
     file: string,
     crops: Crop[],
     details: ParseDetails,
-    cb: ParseFrameCb
+    resultsCb: ParseFrameCb,
+    progressCb: ProgressCallback = emptyCb
   ) {
     console.time("parseVideo time:");
     // TODO WorkerFS might help here https://github.com/ffmpegwasm/ffmpeg.wasm/issues/147
     ffmpeg.FS("writeFile", "file.mp4", await fetchFile(file));
 
-    console.log(
-      `📽parseVideo: parsing `,
-      file,
-      ` Crops: `,
-      crops,
-      " Details: ",
-      details
-    );
+    // Track ffmpeg progress
+    ffmpeg.setProgress(progressCb);
 
     // Get ffmpeg string, convert to array and remove "ffmpeg" from front as that's only needed in terminal
     const cmd = generateFFmpegCommand("file.mp4", crops, details);
@@ -130,9 +125,7 @@ export default function useFFmpeg() {
     console.log(cropFiles);
 
     // Fire handler callback
-    if (cb) {
-      cb(cropFiles, ffmpeg);
-    }
+    resultsCb?.(cropFiles, ffmpeg);
 
     // clean up
     // TODO add clean up for generated files
@@ -143,3 +136,4 @@ export default function useFFmpeg() {
 
   return [ffmpeg, ffmpegReady, parseVideo] as const;
 }
+function emptyCb(progressParams: { ratio: number }): any {}

@@ -1,0 +1,17 @@
+.CropTable {
+    inline-size: inherit;
+}
+
+.CropTable td,
+.CropTable th {
+    padding: 0 .5rem;
+    text-align: center;
+}
+
+.CropTable td[class=name] {
+    text-align: left;
+}
+
+.CropTable input[type=number] {
+    max-width: 3.25rem;
+}
