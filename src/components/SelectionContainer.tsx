@@ -63,6 +63,8 @@ const SelectionContainer: NextComponentType<
     if (!canvas) return;
 
     setDrawing(true);
+    setEndX(-1);
+    setEndY(-1);
     setStartX(e.clientX - canvas.offsetLeft);
     setStartY(e.clientY - canvas.offsetTop);
   };
@@ -87,9 +89,9 @@ const SelectionContainer: NextComponentType<
       height: Math.ceil(Math.abs(endY - startY) / h_ratio),
       name: `crop-${++cropCount}`,
     };
-    setBoxes([...boxes, newBox]);
+    // setBoxes([...boxes, newBox]);
 
-    props.onSelectionChange?.([...boxes, newBox]);
+    props.onSelectionChange?.([...props.selections, newBox]);
   };
 
   const eventHandlers = props?.selecting
@@ -105,7 +107,7 @@ const SelectionContainer: NextComponentType<
   return (
     <div style={{ position: "relative" }} {...eventHandlers} ref={mainDivRef}>
       {props.children}
-      {props.selecting && drawing && (
+      {props.selecting && drawing && endX > -1 && endY > -1 && (
         <div
           style={{
             position: "absolute",
