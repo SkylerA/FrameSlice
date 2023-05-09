@@ -1,9 +1,13 @@
-/* .VidCropper {
-    
-} */
+.VidCropper {
+    inline-size: inherit;
+}
 
 .VidCropper .settings {
     display: flex;
-    /* justify-content: space-between; */
+    justify-content: space-around;
     gap: 2rem;
+}
+
+.VidCropper video {
+    max-width: 100cqw;
 }
