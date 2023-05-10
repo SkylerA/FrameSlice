@@ -23,7 +23,6 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
   return (
     <tr>
       <td className="name">
-        {" "}
         <input
           type="text"
           value={props.crop.name}
