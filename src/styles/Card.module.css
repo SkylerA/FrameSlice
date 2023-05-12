@@ -1,0 +1,7 @@
+.Card {
+    position: relative;
+    border-radius: .5rem;
+    background: #eee;
+    padding: .75rem;
+    width: fit-content;
+}
