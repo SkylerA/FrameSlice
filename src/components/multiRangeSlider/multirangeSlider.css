@@ -1,0 +1,116 @@
+.MultiRangeSlider {
+    --width: 100cqw;
+    --thumb-size: 1.25rem;
+    --thumb-half: calc(var(--thumb-size) / 2.0);
+    /* --track-color-left: #2972b2; */
+    --track-color-left: #007bfe;
+    --track-color-right: #e40492;
+    --font-size: 1rem;
+    --h-pad: 0rem;
+    padding: var(--thumb-half) var(--h-pad) 2.25rem var(--h-pad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    container-type: inline-size;
+}
+
+.MultiRangeSlider .slider {
+    position: relative;
+    width: var(--width);
+    max-width: var(--width);
+}
+
+.MultiRangeSlider .slider__track,
+.MultiRangeSlider .slider__range,
+.MultiRangeSlider .slider__left-value,
+.MultiRangeSlider .slider__right-value {
+    position: absolute;
+}
+
+.MultiRangeSlider .slider__track,
+.MultiRangeSlider .slider__range {
+    border-radius: 3px;
+    height: 5px;
+}
+
+.MultiRangeSlider .slider__track {
+    background-color: #ced4da;
+    width: calc(var(--width) - (var(--h-pad)*2.0));
+    z-index: 1;
+}
+
+.MultiRangeSlider .slider__range {
+    background: linear-gradient(to right, var(--track-color-left) 0%, var(--track-color-right) 100%);
+    z-index: 2;
+}
+
+.MultiRangeSlider .slider__left-value,
+.MultiRangeSlider .slider__right-value {
+    color: #dee2e6;
+    font-size: var(--font-size);
+    margin-top: 1rem;
+}
+
+.MultiRangeSlider .slider__left-value {
+    left: 0;
+}
+
+.MultiRangeSlider .slider__right-value {
+    right: 0;
+}
+
+/* Removing the default appearance */
+.MultiRangeSlider .thumb,
+.MultiRangeSlider .thumb::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.MultiRangeSlider .thumb {
+    pointer-events: none;
+    position: absolute;
+    height: 0;
+    width: var(--width);
+    outline: none;
+}
+
+.MultiRangeSlider .thumb--zindex-3 {
+    z-index: 3;
+}
+
+.MultiRangeSlider .thumb--zindex-4 {
+    z-index: 4;
+}
+
+.MultiRangeSlider .thumb--zindex-5 {
+    z-index: 5;
+}
+
+/* For Chrome browsers */
+.MultiRangeSlider .thumb::-webkit-slider-thumb {
+    background-color: #f1f5f7;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 0 1px 1px #ced4da;
+    cursor: pointer;
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    margin-top: 4px;
+    pointer-events: all;
+    position: relative;
+}
+
+/* For Firefox browsers */
+.MultiRangeSlider .thumb::-moz-range-thumb {
+    background-color: #f1f5f7;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 0 1px 1px #ced4da;
+    cursor: pointer;
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    margin-top: 4px;
+    pointer-events: all;
+    position: relative;
+}
