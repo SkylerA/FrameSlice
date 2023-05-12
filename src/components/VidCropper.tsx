@@ -1,11 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
+import { useDropzone } from "react-dropzone";
 import { useForm, SubmitHandler } from "react-hook-form";
 import useFFmpeg from "@/hooks/useFFmpeg";
-import type { ParseDetails } from "@/components/VidParser";
+import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import type { Box } from "@/components/SelectionContainer";
+import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import type { ParseDetails } from "@/hooks/useFFmpeg";
 import Card from "@/components/Card";
 import CropFileLoader, { Json } from "./CropFileLoader";
 import CropTable from "./CropTable";
@@ -60,6 +61,18 @@ function FramesParseObjToCrop(obj: FramesParseObj): Crop {
   };
 }
 
+const baseStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "8rem 10rem",
+  backgroundColor: "#333333",
+  color: "#bdbdbd",
+  outline: "none",
+  margin: ".5rem",
+  cursor: "pointer",
+};
+
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
@@ -77,6 +90,10 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [parseProgress, setParseProgress] = useState<number>(100);
 
   const { width = 1, height = 1 } = useThrottledResizeObserver(500, videoRef);
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: { "video/*": [] },
+    multiple: false,
+  });
 
   const vidRatio = useMemo(() => {
     return {
@@ -94,12 +111,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const vidLength = videoRef.current?.duration ?? 0;
   const timeRangeMax = (vidLength ? vidLength : 0) * vidScale;
 
-  const details: ParseDetails = {
-    frameCount: 10,
-    startTime: 32,
-    frameRate: 1,
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo] = useFFmpeg();
 
@@ -109,6 +120,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     watch,
     formState: { errors },
   } = useForm<ParseDetails>();
+
+  useEffect(() => {
+    const file = acceptedFiles[0];
+    loadVid(file);
+  }, [JSON.stringify(acceptedFiles)]);
 
   const onCropSubmit: SubmitHandler<ParseDetails> = (data) => {
     const details = { ...data, startTime, stopTime };
@@ -121,7 +137,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   }
 
   const handleCropResults = async (files: string[], ffmpeg: FFmpeg) => {
-    console.log(files);
     freeUrls(cropUrls); // Free previous crop img memory
 
     const newCropUrls = [];
@@ -151,7 +166,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
   function parseFramesFileJson(json: Json) {
     if (json) {
-      console.log(json);
       const frames = json as FramesParseObj[];
       const crops = frames.map((filter) => FramesParseObjToCrop(filter));
       setCropData(crops);
@@ -162,20 +176,25 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     setCropData(selections as Crop[]);
   };
 
-  function handleVideoSelected(e: React.ChangeEvent<HTMLInputElement>): void {
-    URL.revokeObjectURL(vidSrc);
-    const file = e.currentTarget.files?.[0];
+  function loadVid(file: File | undefined) {
     if (file) {
-      // void parseVideo(file, tempCrops, {} as ParseDetails);
+      URL.revokeObjectURL(vidSrc);
+
+      // Reset times so that min/max logic works as expected on load/change
+      setStartTime(-1);
+      setStopTime(-1);
       setVidSrc(URL.createObjectURL(file));
     }
+  }
+
+  function handleVideoSelected(e: React.ChangeEvent<HTMLInputElement>): void {
+    loadVid(e.currentTarget.files?.[0]);
   }
 
   const handleRangeChange = ({ min, max }: { min: number; max: number }) => {
     // de-scale value
     const adjustedMin = rangeValToSec(min);
     const adjustedMax = rangeValToSec(max);
-
     // determine if min or max changed and update the video timestamp to match
     // this will give the user a peview when dragging
     if (videoRef.current) {
@@ -187,12 +206,27 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     }
 
     // track changes
+    setStopTime(adjustedMax); // change stop first so that start time updates the video time last if both changed
     setStartTime(adjustedMin);
-    setStopTime(adjustedMax);
   };
 
   return (
     <div className={styles.VidCropper}>
+      {vidSrc === "" && (
+        <div>
+          <div
+            {...getRootProps({
+              className: "dropzone gradient-border",
+              style: { ...baseStyle },
+            })}
+          >
+            <input {...getInputProps()} />
+            <p>Drag a Video here</p>
+            <p>or</p>
+            <p>Click to select a file</p>
+          </div>
+        </div>
+      )}
       {vidSrc !== "" && (
         <>
           <SelectionContainer
@@ -207,7 +241,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           </SelectionContainer>
           {timeRangeMax > 0 && (
             <div className={styles.RangeContainer}>
-              Range
+              <span>Clip Range</span>
               {/* TODO Might be better to use https://zillow.github.io/react-slider/ */}
               <MultiRangeSlider
                 min={0}
