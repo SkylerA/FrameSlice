@@ -55,7 +55,7 @@ export function generateFFmpegCommand(
     outputMappings.push(
       // TODO decide if vsync 0 should be included
       // TODO see if exporting to bmp can speed up loop by not encoding pixels
-      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${PARSE_PREFIX}${crop_name}_%d.png`
+      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${PARSE_PREFIX}${crop_name}_%d.${imgExt}`
     );
   });
 

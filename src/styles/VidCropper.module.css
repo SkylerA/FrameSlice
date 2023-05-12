@@ -1,13 +1,44 @@
 .VidCropper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     inline-size: inherit;
+    width: fit-content;
 }
 
 .VidCropper .settings {
     display: flex;
     justify-content: space-around;
     gap: 2rem;
+    text-align: left;
 }
 
 .VidCropper video {
     max-width: 100cqw;
+}
+
+.VidCropper .cropResults {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: fit-content;
+}
+
+.VidCropper .test {
+    /* background-color: red; */
+
+}
+
+.VidCropper .RangeContainer {
+    --spacing: 1rem;
+    /* background-color: orange; */
+    container-type: inline-size;
+    width: 100%;
+    color: white;
+    display: flex;
+    gap: var(--spacing);
+    align-items: center;
+    padding: 0rem var(--spacing);
+
 }

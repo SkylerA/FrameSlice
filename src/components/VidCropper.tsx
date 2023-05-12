@@ -1,15 +1,18 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import type { ParseDetails } from "@/components/VidParser";
-import SelectionContainer from "@/components/SelectionContainer";
-import type { Box } from "@/components/SelectionContainer";
-import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
-import styles from "@/styles/VidCropper.module.css";
 import { NextComponentType } from "next";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import { useForm, SubmitHandler } from "react-hook-form";
 import useFFmpeg from "@/hooks/useFFmpeg";
+import type { ParseDetails } from "@/components/VidParser";
+import type { Box } from "@/components/SelectionContainer";
+import Card from "@/components/Card";
 import CropFileLoader, { Json } from "./CropFileLoader";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
 import CropTable from "./CropTable";
+import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
+import SelectionContainer from "@/components/SelectionContainer";
+
+import styles from "@/styles/VidCropper.module.css";
 
 type Props = {};
 
@@ -21,10 +24,6 @@ export type Crop = {
   height: number | string;
   name: string;
 };
-
-function freeUrls(urls: string[]) {
-  urls.map((url) => URL.revokeObjectURL(url));
-}
 
 type FramesCrop = {
   cropH: string;
@@ -39,6 +38,16 @@ type FramesParseObj = {
   UID?: string;
   procParams: { parseProcName: string; proc_kwargs: unknown };
 };
+
+function freeUrls(urls: string[]) {
+  urls.map((url) => URL.revokeObjectURL(url));
+}
+
+const vidScale = 60; // The underlying component's value rounding can cause some resolution issues so this scale provides better granularity
+const secToStr = (val: number) =>
+  new Date((val / vidScale) * 1000).toISOString().slice(11, 22);
+
+const rangeValToSec = (val: number) => Math.round((val / vidScale) * 100) / 100;
 
 function FramesParseObjToCrop(obj: FramesParseObj): Crop {
   const { crop, filterName, UID } = obj;
@@ -58,6 +67,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [selecting, setSelecting] = useState<boolean>(false);
   const [cropUrls, setCropUrls] = useState<string[]>([]);
   const [cropData, setCropData] = useState<Crop[]>([]);
+  const [startTime, setStartTime] = useState<number>(0);
+  const [stopTime, setStopTime] = useState<number>(0);
 
   const editCropsCb = useCallback((crops: Crop[]) => {
     setCropData(crops);
@@ -79,6 +90,10 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     videoRef.current?.videoHeight,
   ]);
 
+  // Determine max value for time range
+  const vidLength = videoRef.current?.duration ?? 0;
+  const timeRangeMax = (vidLength ? vidLength : 0) * vidScale;
+
   const details: ParseDetails = {
     frameCount: 10,
     startTime: 32,
@@ -96,17 +111,16 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   } = useForm<ParseDetails>();
 
   const onCropSubmit: SubmitHandler<ParseDetails> = (data) => {
-    console.log(data);
-
+    const details = { ...data, startTime, stopTime };
     const file = videoRef.current?.src ?? "";
-    parseVideo(file, cropData, data, handleCropResults, ffmpegProgressCb);
+    parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   };
 
   function ffmpegProgressCb(progress: { ratio: number }) {
     setParseProgress(progress.ratio * 100);
   }
 
-  const handleCropResults = (files: string[], ffmpeg: FFmpeg) => {
+  const handleCropResults = async (files: string[], ffmpeg: FFmpeg) => {
     console.log(files);
     freeUrls(cropUrls); // Free previous crop img memory
 
@@ -123,6 +137,13 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       ffmpeg.FS("unlink", file);
 
       newCropUrls.push(imgUrl);
+
+      // update the results in chunks to avoid some thrash
+      const imgChunks = 10;
+      if (newCropUrls.length % imgChunks === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0)); // Allow time for re-render
+        setCropUrls(newCropUrls.slice());
+      }
     }
 
     setCropUrls(newCropUrls);
@@ -150,78 +171,118 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     }
   }
 
+  const handleRangeChange = ({ min, max }: { min: number; max: number }) => {
+    // de-scale value
+    const adjustedMin = rangeValToSec(min);
+    const adjustedMax = rangeValToSec(max);
+
+    // determine if min or max changed and update the video timestamp to match
+    // this will give the user a peview when dragging
+    if (videoRef.current) {
+      if (adjustedMin !== startTime) {
+        videoRef.current.currentTime = adjustedMin;
+      } else if (adjustedMax !== stopTime) {
+        videoRef.current.currentTime = adjustedMax;
+      }
+    }
+
+    // track changes
+    setStartTime(adjustedMin);
+    setStopTime(adjustedMax);
+  };
+
   return (
     <div className={styles.VidCropper}>
-      <SelectionContainer
-        selections={cropData as Box[]}
-        onSelectionChange={handleSelectionChange}
-        selecting={selecting}
-        showSelections
-        ratio={vidRatio}
-      >
-        <video ref={videoRef} src={vidSrc} controls={!selecting} />
-      </SelectionContainer>
+      {vidSrc !== "" && (
+        <>
+          <SelectionContainer
+            className={styles.test}
+            selections={cropData as Box[]}
+            onSelectionChange={handleSelectionChange}
+            selecting={selecting}
+            showSelections
+            ratio={vidRatio}
+          >
+            <video ref={videoRef} src={vidSrc} controls={!selecting} />
+          </SelectionContainer>
+          {timeRangeMax > 0 && (
+            <div className={styles.RangeContainer}>
+              Range
+              {/* TODO Might be better to use https://zillow.github.io/react-slider/ */}
+              <MultiRangeSlider
+                min={0}
+                max={timeRangeMax}
+                step={0.01}
+                convertValCb={secToStr}
+                onChange={handleRangeChange}
+              />
+            </div>
+          )}
+        </>
+      )}
 
-      <div className={styles.settings}>
-        <form onSubmit={handleSubmit(onCropSubmit)}>
-          <div>
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleVideoSelected}
-            />
-          </div>
-          <div>
-            <label>
-              Start Time
-              <input type="number" {...register("startTime")} />
-            </label>
-          </div>
-          <div>
-            {/* TODO Add note about stop time being possibly limited by frame count */}
-            <label>
-              Stop Time
-              <input type="number" {...register("stopTime")} />
-            </label>
-          </div>
-          <div>
-            <label>
-              Frame Count
+      <Card>
+        <div className={styles.settings}>
+          <form onSubmit={handleSubmit(onCropSubmit)}>
+            <div>
               <input
-                defaultValue={1}
-                type="number"
-                {...register("frameCount")}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoSelected}
+              />
+            </div>
+            <div>
+              <label>
+                Frame Count
+                <input
+                  defaultValue={1}
+                  type="number"
+                  {...register("frameCount")}
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Frame Rate
+                <input type="number" {...register("frameRate")} />
+              </label>
+            </div>
+            <div>
+              <label>
+                CMD (ignores all settings)
+                <textarea {...register("ffmpegOverride")} />
+              </label>
+            </div>
+
+            <input type="submit" value="Crop Video" />
+            {/* FFMpeg.wasm seems to report progress in different ratios/scales depending on the cmd so this will need more work to be accurate */}
+            {parseProgress > 0 && parseProgress < 100 && (
+              <progress
+                className="ffmpeg-progress"
+                value={parseProgress}
+                max={100}
+              />
+            )}
+          </form>
+
+          <div className="crop-controls">
+            <CropFileLoader parseJsonCb={parseFramesFileJson} />
+            <label>
+              Select Crop Areas
+              <input
+                type="checkbox"
+                checked={selecting}
+                onChange={(e) => setSelecting(e.currentTarget.checked)}
               />
             </label>
+            <CropTable crops={cropData} editCb={editCropsCb} />
           </div>
-          <div>
-            <label>
-              Frame Rate
-              <input type="number" {...register("frameRate")} />
-            </label>
-          </div>
-
-          <input type="submit" value="Crop Video" />
-          {parseProgress > 0 && parseProgress < 100 && (
-            <progress className="ffmpeg-progress" value={parseProgress} />
-          )}
-        </form>
-
-        <div className="crop-controls">
-          <CropFileLoader parseJsonCb={parseFramesFileJson} />
-          <label>
-            Select Crop Areas
-            <input
-              type="checkbox"
-              checked={selecting}
-              onChange={(e) => setSelecting(e.currentTarget.checked)}
-            />
-          </label>
-          <CropTable crops={cropData} editCb={editCropsCb} />
         </div>
-      </div>
+      </Card>
 
-      <div className="crop-results">
+      {cropUrls.length}
+      <p>{parseProgress}</p>
+      <div className={styles.cropResults}>
         {cropUrls.map((url, idx) => (
           <img src={url} key={url} alt={`crop-result-${idx}`} />
         ))}

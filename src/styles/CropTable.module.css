@@ -5,7 +5,7 @@
 .CropTable td,
 .CropTable th {
     padding: 0 .5rem;
-    text-align: center;
+    text-align: left;
 }
 
 .CropTable td[class=name] {
