@@ -1,6 +1,8 @@
 import { NextComponentType } from "next";
 import React, { useRef, useState } from "react";
 
+// TODO make selections resizable
+
 export type Box = {
   x: number;
   y: number;
@@ -21,6 +23,7 @@ type Props = {
   selections: Box[];
   setSelections?: (selections: Box[]) => void;
   ratio?: Ratio;
+  className?: string;
 };
 
 function validRatio(ratio: Ratio | undefined) {
@@ -77,16 +80,21 @@ const SelectionContainer: NextComponentType<
     setEndY(e.clientY - canvas.offsetTop);
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    const canvas = mainDivRef.current;
+    if (!canvas || !drawing) return;
+
+    const tempEndX = e.clientX - canvas.offsetLeft;
+    const tempEndY = e.clientY - canvas.offsetTop;
+
     setDrawing(false);
-    console.log(startX, startY, endX, endY);
     const { w_ratio, h_ratio } = validRatio(props.ratio);
 
     const newBox = {
-      x: Math.ceil(Math.min(startX, endX) / w_ratio),
-      y: Math.ceil(Math.min(startY, endY) / h_ratio),
-      width: Math.ceil(Math.abs(endX - startX) / w_ratio),
-      height: Math.ceil(Math.abs(endY - startY) / h_ratio),
+      x: Math.ceil(Math.min(startX, tempEndX) / w_ratio),
+      y: Math.ceil(Math.min(startY, tempEndY) / h_ratio),
+      width: Math.ceil(Math.abs(tempEndX - startX) / w_ratio),
+      height: Math.ceil(Math.abs(tempEndY - startY) / h_ratio),
       name: `crop-${++cropCount}`,
     };
     // setBoxes([...boxes, newBox]);
@@ -105,7 +113,12 @@ const SelectionContainer: NextComponentType<
   console.log("redraw: selection container");
 
   return (
-    <div style={{ position: "relative" }} {...eventHandlers} ref={mainDivRef}>
+    <div
+      className={props.className}
+      style={{ position: "relative" }}
+      {...eventHandlers}
+      ref={mainDivRef}
+    >
       {props.children}
       {props.selecting && drawing && endX > -1 && endY > -1 && (
         <div
@@ -115,7 +128,7 @@ const SelectionContainer: NextComponentType<
             top: Math.min(startY, endY),
             width: Math.abs(endX - startX),
             height: Math.abs(endY - startY),
-            outline: "2px dashed red",
+            outline: "2px dashed #e40492",
             opacity: 1,
           }}
         />
@@ -133,7 +146,7 @@ const SelectionContainer: NextComponentType<
               style={{
                 ...css,
                 position: "absolute",
-                outline: "2px dashed red",
+                outline: "2px dashed #e40492",
                 opacity: 1,
               }}
             />
