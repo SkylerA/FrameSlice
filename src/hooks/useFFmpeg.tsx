@@ -23,6 +23,7 @@ export type ParseDetails = {
   startTime?: number;
   stopTime?: number;
   frameRate?: number;
+  ffmpegOverride?: string; // temp command for testing ffmpeg commands manually
 };
 
 export type ParseFrameCb = (parseFiles: string[], ffmpeg: FFmpeg) => void;
@@ -37,9 +38,11 @@ export function generateFFmpegCommand(
   const singleSpace = (str: string) => str.replace(/( )+/g, " ");
   const filterChains: string[] = [];
   const outputMappings: string[] = [];
+  // const imgExt = "png";
+  const imgExt = "jpg";
 
   // Get ffmpeg vars
-  const r = details.frameRate ? `-r ${details.frameRate}` : "";
+  const frameRate = details.frameRate ? `-r ${details.frameRate}` : "";
   const seekStart = details.startTime ? `-ss ${details.startTime}` : "";
   const seekEnd = details.stopTime ? `-to ${details.stopTime}` : "";
   const frames = details.frameCount ? `-vframes ${details.frameCount}` : "";
@@ -52,7 +55,7 @@ export function generateFFmpegCommand(
     outputMappings.push(
       // TODO decide if vsync 0 should be included
       // TODO see if exporting to bmp can speed up loop by not encoding pixels
-      `-map [out${index}] ${r} ${frames} -vsync 1 ${PARSE_PREFIX}${crop_name}_%d.png`
+      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${PARSE_PREFIX}${crop_name}_%d.png`
     );
   });
 
@@ -111,10 +114,12 @@ export default function useFFmpeg() {
     ffmpeg.setProgress(progressCb);
 
     // Get ffmpeg string, convert to array and remove "ffmpeg" from front as that's only needed in terminal
-    const cmd = generateFFmpegCommand("file.mp4", crops, details);
+    const override = details.ffmpegOverride ?? "";
+    const cmd =
+      override !== ""
+        ? override
+        : generateFFmpegCommand("file.mp4", crops, details);
     const args = cmd.split(" ").slice(1);
-    console.log(`📽parseVideo: ffmpeg command: ${cmd}`);
-
     // execute ffmpeg command
     console.log("💻running ffmpeg cmd: ", cmd);
     await ffmpeg.run(...args);
