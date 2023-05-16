@@ -3,8 +3,7 @@
     --thumb-size: 1.25rem;
     --thumb-half: calc(var(--thumb-size) / 2.0);
     /* --track-color-left: #2972b2; */
-    --track-color-left: #007bfe;
-    --track-color-right: #e40492;
+
     --font-size: 1rem;
     --h-pad: 0rem;
     padding: var(--thumb-half) var(--h-pad) 2.25rem var(--h-pad);
@@ -47,7 +46,7 @@
 
 .MultiRangeSlider .slider__left-value,
 .MultiRangeSlider .slider__right-value {
-    color: #dee2e6;
+    color: var(--card-fg);
     font-size: var(--font-size);
     margin-top: 1rem;
 }

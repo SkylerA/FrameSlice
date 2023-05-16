@@ -1,6 +1,17 @@
 :root {
+  --dark-fill: #222;
+  --dark-highlight-fill: #333;
+
+  --primary-bg: var(--dark-fill);
+  --card-bg: var(--dark-highlight-fill);
+  --card-fg: #bdbdbd;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --track-color-left: #007bfe;
+  --track-color-right: #e40492;
+  --border-width: 2px;
+  --gradient-bg: linear-gradient(15deg, var(--track-color-left), var(--track-color-right));
+
   /* --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
     'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
     'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
@@ -88,7 +99,7 @@ body {
   /* background: linear-gradient(to bottom,
       transparent,
       black) rgb(0, 76, 175); */
-  background: #333;
+  background: var(--primary-bg);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -103,25 +114,27 @@ video {
   display: block;
 }
 
+.gradient-bg {
+  background: var(--gradient-bg);
+}
+
 .gradient-border {
-  --borderWidth: 2px;
-  background: #333;
   position: relative;
-  border-radius: var(--borderWidth);
-  margin: var(--borderWidth);
+  border-radius: var(--border-width);
+  margin: var(--border-width);
 }
 
 .gradient-border:after {
   content: '';
   position: absolute;
-  top: calc(-1 * var(--borderWidth));
-  left: calc(-1 * var(--borderWidth));
-  height: calc(100% + var(--borderWidth) * 2);
-  width: calc(100% + var(--borderWidth) * 2);
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
+  height: calc(100% + var(--border-width) * 2);
+  width: calc(100% + var(--border-width) * 2);
   /* background: linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82); */
   background: linear-gradient(90deg, #7d00ea, #ff00a6, #ff9500, #60ff26, #008cff, #7d00ea, #ff00a6, #ff9500);
   /* background: linear-gradient(96.2deg, rgb(255, 230, 112) 10.4%, rgb(255, 100, 100) 43.8%, rgb(0, 93, 219) 105.8%); */
-  border-radius: calc(2 * var(--borderWidth));
+  border-radius: calc(2 * var(--border-width));
   z-index: -1;
   animation: animatedgradient 8s forwards linear infinite;
   background-size: 400% 400%;

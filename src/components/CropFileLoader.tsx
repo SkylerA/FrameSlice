@@ -1,6 +1,8 @@
+import Button from "@mui/material/Button";
 import { NextComponentType } from "next";
-import type { Crop } from "@/components/VidCropper";
 import { useRef } from "react";
+
+// TODO This is probably not screenreader friendly
 
 export type Props = {
   parseJsonCb?: JsonCallback;
@@ -54,16 +56,22 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
   return (
     <div>
-      <label>
+      <Button
+        sx={{ textTransform: "none" }}
+        className="gradient-bg"
+        variant="contained"
+        onClick={() => cropFileRef.current?.click()}
+      >
         Load Crop File
-        <input
-          type="file"
-          accept="application/json"
-          ref={cropFileRef}
-          onChange={(e) => handleCropFileChange(e, props.parseJsonCb)}
-          multiple
-        />
-      </label>
+      </Button>
+      <input
+        type="file"
+        accept="application/json"
+        ref={cropFileRef}
+        onChange={(e) => handleCropFileChange(e, props.parseJsonCb)}
+        multiple
+        hidden
+      />
     </div>
   );
 };

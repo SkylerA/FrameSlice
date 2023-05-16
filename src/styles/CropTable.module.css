@@ -4,8 +4,13 @@
 
 .CropTable td,
 .CropTable th {
-    padding: 0 .5rem;
+    padding-right: .25rem;
     text-align: left;
+}
+
+.CropTable td:last-of-type,
+.CropTable th:last-of-type {
+    padding-right: 0;
 }
 
 .CropTable td[class=name] {
