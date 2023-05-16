@@ -11,6 +11,7 @@
   --track-color-right: #e40492;
   --border-width: 2px;
   --gradient-bg: linear-gradient(15deg, var(--track-color-left), var(--track-color-right));
+  --gradient-small-btn-bg: linear-gradient(25deg, var(--track-color-left), var(--track-color-right));
 
   /* --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
     'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
