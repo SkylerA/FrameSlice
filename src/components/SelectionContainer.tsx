@@ -68,24 +68,32 @@ const SelectionContainer: NextComponentType<
     setDrawing(true);
     setEndX(-1);
     setEndY(-1);
-    setStartX(e.clientX - canvas.offsetLeft);
-    setStartY(e.clientY - canvas.offsetTop);
+    setStartX(
+      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft
+    );
+    setStartY(
+      e.clientY - canvas.offsetTop + document.documentElement.scrollTop
+    );
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
 
-    setEndX(e.clientX - canvas.offsetLeft);
-    setEndY(e.clientY - canvas.offsetTop);
+    setEndX(
+      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft
+    );
+    setEndY(e.clientY - canvas.offsetTop + document.documentElement.scrollTop);
   };
 
   const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
 
-    const tempEndX = e.clientX - canvas.offsetLeft;
-    const tempEndY = e.clientY - canvas.offsetTop;
+    const tempEndX =
+      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft;
+    const tempEndY =
+      e.clientY - canvas.offsetTop + document.documentElement.scrollTop;
 
     setDrawing(false);
     const { w_ratio, h_ratio } = validRatio(props.ratio);
