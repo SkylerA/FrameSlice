@@ -19,6 +19,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 
 import styles from "@/styles/VidCropper.module.css";
+import CircularProgress from "@mui/material/CircularProgress";
 
 type Props = {};
 
@@ -121,6 +122,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [fpsMode, setFpsMode] = useState<string>("video");
   const [fps, setFps] = useState<number>(1);
   const [frameCount, setFrameCount] = useState<number>(10);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
 
@@ -179,6 +181,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
     const details = { ...frameRate, ...frameCountObj, startTime, stopTime };
     const file = videoRef.current?.src ?? "";
+    setCropUrls([]);
+    setLoading(true);
     parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   };
 
@@ -211,6 +215,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       }
     }
 
+    setLoading(false);
     setCropUrls(newCropUrls);
   };
 
@@ -372,7 +377,10 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
               />
             )}
           </span>
-          <Tooltip arrow title="0 for full clip range">
+          <Tooltip
+            arrow
+            title="Stop at Xth frame instead of cropping through full Clip Range. 0 to use Clip Range"
+          >
             <span className={styles.label}>Frame Limit</span>
           </Tooltip>
           <TextField
@@ -410,11 +418,13 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           </span>
         </Tooltip>
       </Card>
-
-      <p>{parseProgress}</p>
-      {cropUrls.length > 0 && (
+      {(cropUrls.length > 0 || loading) && (
         <Card>
           <h2>Crop Results</h2>
+          {loading && (
+            <CircularProgress sx={{ color: "var(--track-color-right)" }} />
+          )}
+
           <div className={styles.cropResults}>
             {cropUrls.map((url, idx) => (
               <img src={url} key={url} alt={`crop-result-${idx}`} />
