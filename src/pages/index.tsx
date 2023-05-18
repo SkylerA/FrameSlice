@@ -1,12 +1,12 @@
 import Head from "next/head";
-import { Nunito } from "next/font/google";
-//   Inter, Montserrat, Raleway, Quicksand,
+import { Manrope } from "next/font/google";
+//   Inter, Montserrat, Raleway, Quicksand, Manrope, Roboto, Lato, PT_Sans, Open_Sans
 
 import styles from "@/styles/Home.module.css";
 import VidCropper from "@/components/VidCropper";
 import Link from "@mui/material/Link";
 
-const font = Nunito({ subsets: ["latin"] });
+const font = Manrope({ subsets: ["latin"] });
 
 export default function Home() {
   return (
