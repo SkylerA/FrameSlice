@@ -69,7 +69,7 @@ function FramesParseObjToCrop(obj: FramesParseObj): Crop {
 
 const baseStyle = {
   display: "flex",
-  flexDirection: "column",
+  flexDirection: "column" as const, // Tyescript complains otherwise...
   alignItems: "center",
   padding: "8rem 10rem",
   backgroundColor: "var(--card-bg)",
