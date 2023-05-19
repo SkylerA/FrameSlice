@@ -28,5 +28,8 @@
     "react-hook-form": "^7.43.9",
     "typescript": "5.0.4",
     "use-resize-observer": "^9.1.0"
+  },
+  "devDependencies": {
+    "@types/lodash.throttle": "^4.1.7"
   }
 }
