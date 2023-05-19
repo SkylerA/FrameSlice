@@ -161,6 +161,7 @@ const SelectionContainer: NextComponentType<
             width: Math.abs(endX - startX),
             height: Math.abs(endY - startY),
             outline: "2px dashed #e40492",
+            overflow: "hidden",
             opacity: 1,
           }}
         />
