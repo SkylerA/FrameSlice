@@ -147,7 +147,10 @@ const SelectionContainer: NextComponentType<
   return (
     <div
       className={props.className}
-      style={{ position: "relative", touchAction: "none" }}
+      style={{
+        position: "relative",
+        touchAction: props.selecting ? "none" : "initial",
+      }}
       {...eventHandlers}
       ref={mainDivRef}
     >
@@ -161,7 +164,7 @@ const SelectionContainer: NextComponentType<
             width: Math.abs(endX - startX),
             height: Math.abs(endY - startY),
             outline: "2px dashed #e40492",
-            overflow: "hidden",
+            overflow: "hidden", // Fixes issue on iOS where one border wouldn't draw
             opacity: 1,
           }}
         />
