@@ -43,22 +43,16 @@ body {
 }
 
 header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: white;
-  z-index: 2;
   width: 100%;
   background: var(--dark-fill);
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
+  margin-bottom: .5rem;
 }
 
-@media (max-width: 540px) {
-  header {
-    flex-direction: column;
-    gap: 0rem;
-    margin-bottom: .5rem;
-  }
-}
+@media (max-width: 540px) {}
 
 main {
   min-height: calc(100vh - var(--header-height));
