@@ -30,6 +30,13 @@ export type ParseFrameCb = (parseFiles: string[], ffmpeg: FFmpeg) => void;
 
 export const PARSE_PREFIX = "parse_";
 
+// parse name out of filenames with format parse_{name}_{count}.{ext}
+function getParseName(file: string) {
+  const pattern = "parse_(.+?)_\\d+..+$";
+  const name = file.match(pattern);
+  return name ? name[1] : null;
+}
+
 export function generateFFmpegCommand(
   file: string,
   crops: Crop[],
@@ -139,6 +146,6 @@ export default function useFFmpeg() {
     console.timeEnd("parseVideo time:");
   }
 
-  return [ffmpeg, ffmpegReady, parseVideo] as const;
+  return [ffmpeg, ffmpegReady, parseVideo, getParseName] as const;
 }
 function emptyCb(progressParams: { ratio: number }): any {}

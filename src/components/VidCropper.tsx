@@ -46,8 +46,13 @@ type FramesParseObj = {
   procParams: { parseProcName: string; proc_kwargs: unknown };
 };
 
-function freeUrls(urls: string[]) {
-  urls.map((url) => URL.revokeObjectURL(url));
+type CropResult = {
+  url: string;
+  name: string | undefined;
+};
+
+function freeUrls(results: CropResult[]) {
+  results.map((result) => URL.revokeObjectURL(result.url));
 }
 
 const vidScale = 60; // The underlying component's value rounding can cause some resolution issues so this scale provides better granularity
@@ -110,12 +115,51 @@ const textFieldStyle = {
   },
 };
 
+function groupResults(cropResults: CropResult[]) {
+  const resultMap = createAutoArrayMap<string>();
+
+  // group our urls by crop name
+  cropResults.map((result) => {
+    resultMap[result.name ?? ""].push(result.url);
+  });
+
+  // get group names
+  const keys = Array.from(Reflect.ownKeys(resultMap) as string[]);
+
+  // loop through each group and add images to a div
+  return keys.map((key) => (
+    <>
+      <div className={styles.cropGroup} key={key}>
+        <h3>{key}</h3>
+        {resultMap[key].map((url, idx) => (
+          <img src={url} key={url} alt={`${url} result ${idx}`} />
+        ))}
+      </div>
+    </>
+  ));
+}
+
+type AutoArrayMap<T> = { [key: string]: T[] };
+function createAutoArrayMap<T>(): AutoArrayMap<T> {
+  const map: AutoArrayMap<T> = {};
+
+  return new Proxy(map, {
+    get(target, property) {
+      if (!(property in target)) {
+        target[property as string] = [];
+      }
+
+      return target[property as string];
+    },
+  });
+}
+
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
   const [vidSrc, setVidSrc] = useState<string>("");
   const [selecting, setSelecting] = useState<boolean>(false);
-  const [cropUrls, setCropUrls] = useState<string[]>([]);
+  const [cropResults, setCropResults] = useState<CropResult[]>([]);
   const [cropData, setCropData] = useState<Crop[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [stopTime, setStopTime] = useState<number>(0);
@@ -155,7 +199,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const timeRangeMax = (vidLength ? vidLength : 0) * vidScale;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ffmpeg, ffmpegReady, parseVideo] = useFFmpeg();
+  const [ffmpeg, ffmpegReady, parseVideo, getParseName] = useFFmpeg();
 
   const {
     register,
@@ -181,7 +225,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
     const details = { ...frameRate, ...frameCountObj, startTime, stopTime };
     const file = videoRef.current?.src ?? "";
-    setCropUrls([]);
+    setCropResults([]);
     setLoading(true);
     parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   };
@@ -191,32 +235,33 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   }
 
   const handleCropResults = async (files: string[], ffmpeg: FFmpeg) => {
-    freeUrls(cropUrls); // Free previous crop img memory
+    freeUrls(cropResults); // Free previous crop img memory
 
-    const newCropUrls = [];
+    const newResults = [];
     for (const file of files) {
       // load next image
       const data = ffmpeg.FS("readFile", file);
       const blob = new Blob([data.buffer], { type: "image/png" });
 
       // Create a URL
-      const imgUrl = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      const name = getParseName(file) ?? "";
 
       // clean up the ffmpeg files
       ffmpeg.FS("unlink", file);
 
-      newCropUrls.push(imgUrl);
+      newResults.push({ url, name });
 
       // update the results in chunks to avoid some thrash
       const imgChunks = 10;
-      if (newCropUrls.length % imgChunks === 0) {
+      if (newResults.length % imgChunks === 0) {
         await new Promise((resolve) => setTimeout(resolve, 0)); // Allow time for re-render
-        setCropUrls(newCropUrls.slice());
+        setCropResults(newResults.slice());
       }
     }
 
     setLoading(false);
-    setCropUrls(newCropUrls);
+    setCropResults(newResults);
   };
 
   function parseFramesFileJson(json: Json) {
@@ -271,6 +316,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   ): void {
     setFpsMode(value);
   }
+
+  const crop_results_grouped = useMemo(
+    () => groupResults(cropResults),
+    [JSON.stringify(cropResults)]
+  );
 
   return (
     <div className={styles.VidCropper}>
@@ -418,18 +468,14 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           </span>
         </Tooltip>
       </Card>
-      {(cropUrls.length > 0 || loading) && (
+      {(cropResults.length > 0 || loading) && (
         <Card>
           <h2>Crop Results</h2>
           {loading && (
             <CircularProgress sx={{ color: "var(--track-color-right)" }} />
           )}
 
-          <div className={styles.cropResults}>
-            {cropUrls.map((url, idx) => (
-              <img src={url} key={url} alt={`crop-result-${idx}`} />
-            ))}
-          </div>
+          <div className={styles.cropResults}>{crop_results_grouped}</div>
         </Card>
       )}
     </div>

@@ -80,3 +80,8 @@
     gap: .25rem;
 
 }
+
+.VidCropper .cropGroup {
+    display: grid;
+    align-content: space-between;
+}
