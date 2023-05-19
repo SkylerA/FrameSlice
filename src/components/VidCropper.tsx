@@ -20,6 +20,7 @@ import Tooltip from "@mui/material/Tooltip";
 
 import styles from "@/styles/VidCropper.module.css";
 import CircularProgress from "@mui/material/CircularProgress";
+import ScrollOnShow from "./ScrollOnShow";
 
 type Props = {};
 
@@ -479,7 +480,10 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         <Card>
           <h2>Crop Results</h2>
           {loading && (
-            <CircularProgress sx={{ color: "var(--track-color-right)" }} />
+            <>
+              <ScrollOnShow />
+              <CircularProgress sx={{ color: "var(--track-color-right)" }} />
+            </>
           )}
 
           <div className={styles.cropResults}>{crop_results_grouped}</div>
