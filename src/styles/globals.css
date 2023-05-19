@@ -52,6 +52,14 @@ header {
   gap: 1rem;
 }
 
+@media (max-width: 540px) {
+  header {
+    flex-direction: column;
+    gap: 0rem;
+    margin-bottom: .5rem;
+  }
+}
+
 main {
   min-height: calc(100vh - var(--header-height));
 }

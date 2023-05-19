@@ -17,6 +17,12 @@
     text-align: left;
 }
 
+@media (max-width: 490px) {
+    .CropTable td[class=name] input {
+        width: 100%;
+    }
+}
+
 .CropTable input[type=number] {
     max-width: 3.25rem;
 }
