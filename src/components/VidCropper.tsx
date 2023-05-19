@@ -75,12 +75,13 @@ function FramesParseObjToCrop(obj: FramesParseObj): Crop {
 const baseStyle = {
   display: "flex",
   flexDirection: "column" as const, // Tyescript complains otherwise...
-  alignItems: "center",
-  padding: "8rem 10rem",
+  justifyContent: "center",
   backgroundColor: "var(--card-bg)",
   color: "var(--card-fg)",
   outline: "none",
   cursor: "pointer",
+  height: "10rem",
+  width: "20rem",
 };
 
 const toggleStyle = {
@@ -354,6 +355,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
               src={vidSrc}
               controls={!selecting}
               playsInline
+              muted
             />
           </SelectionContainer>
           {timeRangeMax > 0 && (

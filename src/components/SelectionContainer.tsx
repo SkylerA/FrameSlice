@@ -180,6 +180,7 @@ const SelectionContainer: NextComponentType<
                 position: "absolute",
                 outline: "2px dashed #e40492",
                 opacity: 1,
+                pointerEvents: "none",
               }}
             />
           );
