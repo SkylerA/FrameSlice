@@ -20,6 +20,10 @@
     justify-content: center;
 }
 
+.VidCropper .cropResults img {
+    max-width: 100%
+}
+
 .VidCropper .test {
     /* background-color: red; */
 
