@@ -147,7 +147,7 @@ const SelectionContainer: NextComponentType<
   return (
     <div
       className={props.className}
-      style={{ position: "relative" }}
+      style={{ position: "relative", touchAction: "none" }}
       {...eventHandlers}
       ref={mainDivRef}
     >
