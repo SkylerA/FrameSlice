@@ -349,7 +349,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
             showSelections
             ratio={vidRatio}
           >
-            <video ref={videoRef} src={vidSrc} controls={!selecting} />
+            <video
+              ref={videoRef}
+              src={vidSrc}
+              controls={!selecting}
+              playsInline
+            />
           </SelectionContainer>
           {timeRangeMax > 0 && (
             <div className={styles.RangeContainer}>

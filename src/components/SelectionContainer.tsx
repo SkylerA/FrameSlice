@@ -61,39 +61,31 @@ const SelectionContainer: NextComponentType<
   const [endY, setEndY] = useState(0);
   const mainDivRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSelectStart = (x: number, y: number) => {
     const canvas = mainDivRef.current;
     if (!canvas) return;
 
     setDrawing(true);
     setEndX(-1);
     setEndY(-1);
-    setStartX(
-      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft
-    );
-    setStartY(
-      e.clientY - canvas.offsetTop + document.documentElement.scrollTop
-    );
+    setStartX(x - canvas.offsetLeft + document.documentElement.scrollLeft);
+    setStartY(y - canvas.offsetTop + document.documentElement.scrollTop);
   };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSelectMove = (x: number, y: number) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
 
-    setEndX(
-      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft
-    );
-    setEndY(e.clientY - canvas.offsetTop + document.documentElement.scrollTop);
+    setEndX(x - canvas.offsetLeft + document.documentElement.scrollLeft);
+    setEndY(y - canvas.offsetTop + document.documentElement.scrollTop);
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSelectEnd = (x: number, y: number) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
 
     const tempEndX =
-      e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft;
-    const tempEndY =
-      e.clientY - canvas.offsetTop + document.documentElement.scrollTop;
+      x - canvas.offsetLeft + document.documentElement.scrollLeft;
+    const tempEndY = y - canvas.offsetTop + document.documentElement.scrollTop;
 
     setDrawing(false);
     const { w_ratio, h_ratio } = validRatio(props.ratio);
@@ -105,20 +97,52 @@ const SelectionContainer: NextComponentType<
       height: Math.ceil(Math.abs(tempEndY - startY) / h_ratio),
       name: `crop-${++cropCount}`,
     };
-    // setBoxes([...boxes, newBox]);
 
     props.onSelectionChange?.([...props.selections, newBox]);
   };
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleSelectStart(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleSelectMove(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleSelectEnd(e.clientX, e.clientY);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.changedTouches[0];
+    if (touch) {
+      handleSelectStart(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.changedTouches[0];
+    if (touch) {
+      handleSelectMove(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.changedTouches[0];
+    if (touch) {
+      handleSelectEnd(touch.clientX, touch.clientY);
+    }
+  };
   const eventHandlers = props?.selecting
     ? {
         onMouseDown: handleMouseDown,
         onMouseMove: handleMouseMove,
         onMouseUp: handleMouseUp,
+        onTouchStart: handleTouchStart,
+        onTouchMove: handleTouchMove,
+        onTouchEnd: handleTouchEnd,
       }
     : {};
-
-  console.log("redraw: selection container");
 
   return (
     <div
