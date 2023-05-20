@@ -32,9 +32,12 @@ export const PARSE_PREFIX = "parse_";
 
 // parse name out of filenames with format parse_{name}_{count}.{ext}
 function getParseName(file: string) {
-  const pattern = "parse_(.+?)_\\d+..+$";
-  const name = file.match(pattern);
-  return name ? name[1] : null;
+  const pattern = "parse_(.+?)_(\\d+).(.+$)";
+  const matches = file.match(pattern);
+  const name = matches ? matches[1] : "";
+  const idx = matches ? Number(matches[2]) : 0;
+  const ext = matches ? matches[3] : "";
+  return { name, idx, ext };
 }
 
 export function generateFFmpegCommand(

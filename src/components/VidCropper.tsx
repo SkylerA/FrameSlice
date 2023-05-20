@@ -8,19 +8,24 @@ import type { Box } from "@/components/SelectionContainer";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import type { ParseDetails } from "@/hooks/useFFmpeg";
 import Card from "@/components/Card";
+import CircularProgress from "@mui/material/CircularProgress";
 import CropFileLoader, { Json } from "./CropFileLoader";
 import CropTable from "./CropTable";
+import DownloadIcon from "@mui/icons-material/Download";
 import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
 import SelectionContainer from "@/components/SelectionContainer";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import ScrollOnShow from "./ScrollOnShow";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 
 import styles from "@/styles/VidCropper.module.css";
-import CircularProgress from "@mui/material/CircularProgress";
-import ScrollOnShow from "./ScrollOnShow";
+import IconButton from "@mui/material/IconButton";
+
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 type Props = {};
 
@@ -50,6 +55,8 @@ type FramesParseObj = {
 type CropResult = {
   url: string;
   name: string | undefined;
+  idx: number;
+  ext: string;
 };
 
 function freeUrls(results: CropResult[]) {
@@ -247,12 +254,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
       // Create a URL
       const url = URL.createObjectURL(blob);
-      const name = getParseName(file) ?? "";
+      const { name, idx, ext } = getParseName(file) ?? "";
 
       // clean up the ffmpeg files
       ffmpeg.FS("unlink", file);
 
-      newResults.push({ url, name });
+      newResults.push({ url, name, idx, ext });
 
       // update the results in chunks to avoid some thrash
       const imgChunks = 10;
@@ -323,6 +330,40 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     () => groupResults(cropResults),
     [JSON.stringify(cropResults)]
   );
+
+  const fetchAndZipImg = (url: string, zip: JSZip, path: string) => {
+    return fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        // Add the image file to the JSZip file
+        zip.file(path, blob);
+      })
+      .catch((error) => {
+        console.error(`fetchAndZipImg Error: ${error}`);
+      });
+  };
+
+  function downloadCrops(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ): void {
+    // Create a zip of all crops in their respective label folders
+    const zip = new JSZip();
+
+    // async add images to zip
+    const promises = cropResults.map((result) => {
+      const zipPath = `${result.name}/${result.idx}.${result.ext}`;
+      // dl the img from the url
+      return fetchAndZipImg(result.url, zip, zipPath);
+    });
+
+    // Wait for all images to dl and then zip everything
+    Promise.all(promises).then(() => {
+      zip.generateAsync({ type: "blob" }).then((blob) => {
+        // Prompt the user to save the file
+        saveAs(blob, "Crops.zip");
+      });
+    });
+  }
 
   return (
     <div className={styles.VidCropper}>
@@ -478,7 +519,22 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       </Card>
       {(cropResults.length > 0 || loading) && (
         <Card>
-          <h2>Crop Results</h2>
+          <h2>
+            Crop Results
+            {!loading && (
+              <Tooltip arrow placement="right" title="Download Crops">
+                <IconButton focusRipple onClick={downloadCrops} size="large">
+                  <DownloadIcon
+                    sx={{
+                      color: "white",
+                      background: "var(--gradient-small-btn-bg)",
+                      borderRadius: ".25rem",
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            )}
+          </h2>
           {loading && (
             <>
               <ScrollOnShow />
