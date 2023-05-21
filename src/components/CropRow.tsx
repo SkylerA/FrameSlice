@@ -1,5 +1,5 @@
 import { NextComponentType } from "next";
-import { Crop } from "./VidCropper";
+import { Crop } from "@/hooks/useFFmpeg";
 import SvgIcon from "@mui/material/SvgIcon";
 import ButtonBase from "@mui/material/ButtonBase";
 
