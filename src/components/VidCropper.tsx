@@ -137,14 +137,12 @@ function groupResults(cropResults: CropResult[]) {
 
   // loop through each group and add images to a div
   return keys.map((key) => (
-    <>
-      <div className={styles.cropGroup} key={key}>
-        <h3>{key}</h3>
-        {resultMap[key].map((url, idx) => (
-          <img src={url} key={url} alt={`${url} result ${idx}`} />
-        ))}
-      </div>
-    </>
+    <div className={styles.cropGroup} key={key}>
+      <h3>{key}</h3>
+      {resultMap[key].map((url, idx) => (
+        <img src={url} key={url} alt={`${url} result ${idx}`} />
+      ))}
+    </div>
   ));
 }
 
