@@ -9,19 +9,8 @@
     padding-bottom: 1rem;
 }
 
-
 .VidCropper video {
     max-width: 100cqw;
-}
-
-.VidCropper .cropResults {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.VidCropper .cropResults img {
-    max-width: 100%
 }
 
 .VidCropper .test {
@@ -41,33 +30,10 @@
 
 }
 
-.VidCropper .frameControls {
-    display: grid;
-    /* flex-wrap: nowrap; */
-    gap: .5rem;
-    grid-template-columns: auto auto;
-    align-items: center;
-    /* justify-items: right; */
-    width: min-content;
-}
-
-.VidCropper .fpsControl {
-    display: flex;
-    flex-wrap: nowrap;
-}
-
 .VidCropper .cropControls {
     display: flex;
     flex-direction: column;
     gap: .5rem;
-}
-
-.VidCropper .fpsControl input {
-    min-width: 4rem;
-}
-
-.VidCropper .label {
-    justify-self: center;
 }
 
 .VidCropper .controls {

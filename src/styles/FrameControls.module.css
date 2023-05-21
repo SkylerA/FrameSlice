@@ -1,0 +1,16 @@
+.frameControls {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: auto auto;
+    align-items: center;
+    width: min-content;
+}
+
+.frameControls .fpsControl {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.frameControls .fpsControl input {
+    min-width: 4rem;
+}

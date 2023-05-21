@@ -12,15 +12,12 @@ import CropFileLoader, { Json } from "./CropFileLoader";
 import CropTable from "./CropTable";
 import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
 import SelectionContainer from "@/components/SelectionContainer";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Tooltip from "@mui/material/Tooltip";
 
 import styles from "@/styles/VidCropper.module.css";
 
 import CropResults from "./CropResults";
+import FrameControls, { FrameControlValues } from "./FrameControls";
 
 type Props = {};
 
@@ -87,38 +84,6 @@ const baseStyle = {
   width: "20rem",
 };
 
-const toggleStyle = {
-  backgroundColor: "var(--card-bg)",
-  color: "var(--card-fg)",
-  borderColor: "var(--card-fg)",
-  textTransform: "none",
-  "&.Mui-selected": {
-    background: "var(--gradient-bg)",
-    color: "white",
-  },
-  "&:hover": {
-    background: "var(--gradient-bg)",
-    color: "white",
-  },
-};
-
-const textFieldStyle = {
-  "& .MuiInputBase-root": {
-    color: "var(--card-fg)",
-  },
-  "& .MuiOutlinedInput-root": {
-    "& fieldset": {
-      borderColor: "var(--card-fg)",
-    },
-    "&:hover fieldset": {
-      borderColor: "primary.main",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "primary.dark",
-    },
-  },
-};
-
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
@@ -128,9 +93,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [cropData, setCropData] = useState<Crop[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [stopTime, setStopTime] = useState<number>(0);
-  const [fpsMode, setFpsMode] = useState<string>("video");
-  const [fps, setFps] = useState<number>(1);
-  const [frameCount, setFrameCount] = useState<number>(10);
   const [loading, setLoading] = useState<boolean>(false);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
@@ -177,23 +139,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     const file = acceptedFiles[0];
     loadVid(file);
   }, [JSON.stringify(acceptedFiles)]);
-
-  const onCropSubmit: SubmitHandler<ParseDetails> = (data) => {
-    const details = { ...data, startTime, stopTime };
-    const file = videoRef.current?.src ?? "";
-    parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
-  };
-
-  const handleCropVideo = () => {
-    const frameRate = fpsMode === "custom" ? { frameRate: fps } : {};
-    const frameCountObj = frameCount > 0 ? { frameCount } : {};
-
-    const details = { ...frameRate, ...frameCountObj, startTime, stopTime };
-    const file = videoRef.current?.src ?? "";
-    setCropResults([]);
-    setLoading(true);
-    parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
-  };
 
   function ffmpegProgressCb(progress: { ratio: number }) {
     setParseProgress(progress.ratio * 100);
@@ -252,10 +197,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     }
   }
 
-  function handleVideoSelected(e: React.ChangeEvent<HTMLInputElement>): void {
-    loadVid(e.currentTarget.files?.[0]);
-  }
-
   const handleRangeChange = ({ min, max }: { min: number; max: number }) => {
     // de-scale value
     const adjustedMin = rangeValToSec(min);
@@ -275,11 +216,20 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     setStartTime(adjustedMin);
   };
 
-  function handleChange(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    value: string
-  ): void {
-    setFpsMode(value);
+  // TODO useCallback
+  function cropVidCb(frameVals: FrameControlValues): void {
+    const frameRate =
+      frameVals.frameRateMode === "custom"
+        ? { frameRate: frameVals.frameRate }
+        : {};
+    const frameCount =
+      frameVals.frameCount > 0 ? { frameCount: frameVals.frameCount } : {};
+
+    const details = { ...frameRate, ...frameCount, startTime, stopTime };
+    const file = videoRef.current?.src ?? "";
+    setCropResults([]);
+    setLoading(true);
+    parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   }
 
   return (
@@ -359,80 +309,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       </Card>
 
       <Card className={styles.controls}>
-        <h2>Frame Controls</h2>
-        <div className={styles.frameControls}>
-          <span className={styles.label}>FPS</span>
-          <span className={styles.fpsControl}>
-            <ToggleButtonGroup
-              size="small"
-              color="primary"
-              value={fpsMode}
-              exclusive
-              onChange={handleChange}
-              aria-label="FPS"
-            >
-              <ToggleButton value="video" className="test" sx={toggleStyle}>
-                Video
-              </ToggleButton>
-              <ToggleButton value="custom" sx={toggleStyle}>
-                Custom
-              </ToggleButton>
-            </ToggleButtonGroup>
-            {fpsMode === "custom" && (
-              <TextField
-                size="small"
-                value={fps}
-                sx={textFieldStyle}
-                onChange={(e) => setFps(Number(e.currentTarget.value))}
-                inputProps={{
-                  step: 1,
-                  min: 0,
-                  max: 1000,
-                  type: "number",
-                }}
-              />
-            )}
-          </span>
-          <Tooltip
-            arrow
-            title="Stop at Xth frame instead of cropping through full Clip Range. 0 to use Clip Range"
-          >
-            <span className={styles.label}>Frame Limit</span>
-          </Tooltip>
-          <TextField
-            size="small"
-            value={frameCount}
-            sx={textFieldStyle}
-            onChange={(e) => setFrameCount(Number(e.currentTarget.value))}
-            inputProps={{
-              step: 1,
-              min: 0,
-              max: 1000,
-              type: "number",
-            }}
-          />
-        </div>
-        <Tooltip
-          arrow
-          title={
-            cropDisabled
-              ? "Select a video and at least 1 crop region to enable"
-              : ""
-          }
-        >
-          <span>
-            {/* span enables tooltip on button even when disabled */}
-            <Button
-              sx={{ textTransform: "none" }}
-              disabled={cropDisabled}
-              className="gradient-bg"
-              variant="contained"
-              onClick={handleCropVideo}
-            >
-              Crop Video
-            </Button>
-          </span>
-        </Tooltip>
+        <FrameControls cropCb={cropVidCb} cropDisabled={cropDisabled} />
       </Card>
       {(cropResults.length > 0 || loading) && (
         <Card>
