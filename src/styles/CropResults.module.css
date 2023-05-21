@@ -1,0 +1,9 @@
+.cropResults {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.cropResults img {
+    max-width: 100%
+}
