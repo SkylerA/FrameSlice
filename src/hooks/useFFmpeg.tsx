@@ -102,7 +102,7 @@ export default function useFFmpeg() {
 
       setFFmpegReady(ffmpeg.isLoaded());
     }
-    console.timeEnd("ffmpeg load");
+    console.timeEnd("ffmpeg loaded");
   };
 
   async function parseVideo(
