@@ -3,7 +3,7 @@ import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import type { FFmpeg, ProgressCallback } from "@ffmpeg/ffmpeg";
 
 const ffmpeg_init = {
-  log: true,
+  log: false,
   corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
   //   corePath: "http://localhost:3000/ffmpeg-core.js",
 };
@@ -94,20 +94,16 @@ export default function useFFmpeg() {
   const ffmpeg = useMemo(() => createFFmpeg(ffmpeg_init), []);
   const [ffmpegReady, setFFmpegReady] = useState(false);
 
-  useEffect(() => {
-    // Load the ffmpeg wasm once the interface has been created
-    const load = async () => {
-      // for whatever reason, the compiler demanded that this async func definition get moved inside the useEffect
-      if (ffmpeg && !ffmpeg.isLoaded()) {
-        console.log("ffmpeg loading...");
-        await ffmpeg.load();
+  const load = async () => {
+    console.time("ffmpeg loaded");
+    if (ffmpeg && !ffmpeg.isLoaded()) {
+      console.log("ffmpeg loading...");
+      await ffmpeg.load();
 
-        setFFmpegReady(ffmpeg.isLoaded());
-      }
-    };
-
-    load().catch((e) => console.log(e));
-  }, [ffmpeg]);
+      setFFmpegReady(ffmpeg.isLoaded());
+    }
+    console.timeEnd("ffmpeg load");
+  };
 
   async function parseVideo(
     file: string,
@@ -116,6 +112,7 @@ export default function useFFmpeg() {
     resultsCb: ParseFrameCb,
     progressCb: ProgressCallback = emptyCb
   ) {
+    await load();
     console.time("parseVideo time:");
     // TODO WorkerFS might help here https://github.com/ffmpegwasm/ffmpeg.wasm/issues/147
     ffmpeg.FS("writeFile", "file.mp4", await fetchFile(file));
