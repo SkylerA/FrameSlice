@@ -1,0 +1,13 @@
+.CropControls {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.CropControls .cropLoad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+
+}

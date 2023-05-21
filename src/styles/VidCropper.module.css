@@ -30,26 +30,6 @@
 
 }
 
-.VidCropper .cropControls {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-}
-
-.VidCropper .controls {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-}
-
-.VidCropper .cropLoad {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: .25rem;
-
-}
-
 .VidCropper .cropGroup {
     display: grid;
     align-content: space-between;

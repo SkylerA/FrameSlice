@@ -38,7 +38,7 @@ const FrameControls: NextComponentType<
   }
 
   return (
-    <>
+    <div className={styles.container}>
       <h2>Frame Controls</h2>
       <div className={styles.frameControls}>
         <span className={styles.label}>FPS</span>
@@ -113,7 +113,7 @@ const FrameControls: NextComponentType<
           </Button>
         </span>
       </Tooltip>
-    </>
+    </div>
   );
 };
 

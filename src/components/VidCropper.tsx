@@ -1,34 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NextComponentType } from "next";
 import { useDropzone } from "react-dropzone";
-import { useForm, SubmitHandler } from "react-hook-form";
-import useFFmpeg from "@/hooks/useFFmpeg";
+import { useForm } from "react-hook-form";
+import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
 import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import type { Box } from "@/components/SelectionContainer";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import type { ParseDetails } from "@/hooks/useFFmpeg";
 import Card from "@/components/Card";
-import CropFileLoader, { Json } from "./CropFileLoader";
-import CropTable from "./CropTable";
+import { Json } from "./CropFileLoader";
 import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
 import SelectionContainer from "@/components/SelectionContainer";
-import Tooltip from "@mui/material/Tooltip";
 
 import styles from "@/styles/VidCropper.module.css";
 
 import CropResults from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
+import CropControls from "./CropControls";
 
 type Props = {};
-
-export type Crop = {
-  // x,y,width,height allow strings for passing of ffmpeg expressions like "in_w-50"
-  x: number | string;
-  y: number | string;
-  width: number | string;
-  height: number | string;
-  name: string;
-};
 
 type FramesCrop = {
   cropH: string;
@@ -100,6 +90,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const editCropsCb = useCallback((crops: Crop[]) => {
     setCropData(crops);
   }, []);
+
+  const setSelectingCb = useCallback((selecting: boolean) => {
+    setSelecting(selecting);
+  }, []);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [parseProgress, setParseProgress] = useState<number>(100);
 
@@ -284,31 +279,16 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       )}
 
       <Card>
-        <div className={styles.cropControls}>
-          <h2>Crop Regions</h2>
-          <span className={styles.cropLoad}>
-            <Tooltip
-              arrow
-              title="Click and drag on video frame to create crop areas"
-              sx={{ display: "flex" }}
-            >
-              <label>
-                <input
-                  type="checkbox"
-                  checked={selecting}
-                  onChange={(e) => setSelecting(e.currentTarget.checked)}
-                />
-                Select Crop Areas
-              </label>
-            </Tooltip>
-            <span>or</span>
-            <CropFileLoader parseJsonCb={parseFramesFileJson} />
-          </span>
-          <CropTable crops={cropData} editCb={editCropsCb} />
-        </div>
+        <CropControls
+          parseFramesFileJson={parseFramesFileJson}
+          editCropsCb={editCropsCb}
+          cropData={cropData}
+          selecting={selecting}
+          setSelecting={setSelectingCb}
+        />
       </Card>
 
-      <Card className={styles.controls}>
+      <Card>
         <FrameControls cropCb={cropVidCb} cropDisabled={cropDisabled} />
       </Card>
       {(cropResults.length > 0 || loading) && (
