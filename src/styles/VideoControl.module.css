@@ -1,0 +1,11 @@
+.RangeContainer {
+    --spacing: 1rem;
+    container-type: inline-size;
+    width: 100%;
+    color: var(--card-fg);
+    display: flex;
+    gap: var(--spacing);
+    align-items: center;
+    padding: 0rem var(--spacing);
+
+}

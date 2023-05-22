@@ -1,22 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import { useForm } from "react-hook-form";
 import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
-import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
-import type { Box } from "@/components/SelectionContainer";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
-import type { ParseDetails } from "@/hooks/useFFmpeg";
 import Card from "@/components/Card";
 import { Json } from "./CropFileLoader";
-import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
-import SelectionContainer from "@/components/SelectionContainer";
-
-import styles from "@/styles/VidCropper.module.css";
-
 import CropResults from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
-import DropZone from "./DropZone";
+import VideoControl from "./VideoControl";
+
+import styles from "@/styles/VidCropper.module.css";
 
 type Props = {};
 
@@ -44,12 +37,6 @@ type CropResult = {
 function freeUrls(results: CropResult[]) {
   results.map((result) => URL.revokeObjectURL(result.url));
 }
-
-const vidScale = 60; // The underlying component's value rounding can cause some resolution issues so this scale provides better granularity
-const secToStr = (val: number) =>
-  new Date((val / vidScale) * 1000).toISOString().slice(11, 22);
-
-const rangeValToSec = (val: number) => Math.round((val / vidScale) * 100) / 100;
 
 function FramesParseObjToCrop(obj: FramesParseObj): Crop {
   const { crop, filterName, UID } = obj;
@@ -86,33 +73,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const videoRef = useRef<HTMLVideoElement>(null);
   const [parseProgress, setParseProgress] = useState<number>(100);
 
-  const { width = 1, height = 1 } = useThrottledResizeObserver(500, videoRef);
-
-  const vidRatio = useMemo(() => {
-    return {
-      w_ratio: width / (videoRef.current?.videoWidth ?? width),
-      h_ratio: height / (videoRef.current?.videoHeight ?? height),
-    };
-  }, [
-    width,
-    videoRef.current?.videoWidth,
-    height,
-    videoRef.current?.videoHeight,
-  ]);
-
-  // Determine max value for time range
-  const vidLength = videoRef.current?.duration ?? 0;
-  const timeRangeMax = (vidLength ? vidLength : 0) * vidScale;
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName] = useFFmpeg();
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ParseDetails>();
 
   function ffmpegProgressCb(progress: { ratio: number }) {
     setParseProgress(progress.ratio * 100);
@@ -155,41 +117,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       setCropData(crops);
     }
   }
-
-  const handleSelectionChange = (selections: Box[]) => {
-    setCropData(selections as Crop[]);
-  };
-
-  function loadVid(file: File | undefined) {
-    if (file) {
-      URL.revokeObjectURL(vidSrc);
-
-      // Reset times so that min/max logic works as expected on load/change
-      setStartTime(-1);
-      setStopTime(-1);
-      setVidSrc(URL.createObjectURL(file));
-    }
-  }
-
-  const handleRangeChange = ({ min, max }: { min: number; max: number }) => {
-    // de-scale value
-    const adjustedMin = rangeValToSec(min);
-    const adjustedMax = rangeValToSec(max);
-    // determine if min or max changed and update the video timestamp to match
-    // this will give the user a peview when dragging
-    if (videoRef.current) {
-      if (adjustedMin !== startTime) {
-        videoRef.current.currentTime = adjustedMin;
-      } else if (adjustedMax !== stopTime) {
-        videoRef.current.currentTime = adjustedMax;
-      }
-    }
-
-    // track changes
-    setStopTime(adjustedMax); // change stop first so that start time updates the video time last if both changed
-    setStartTime(adjustedMin);
-  };
-
   // TODO useCallback
   function cropVidCb(frameVals: FrameControlValues): void {
     const frameRate =
@@ -206,44 +133,20 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   }
 
-  const haveVid = vidSrc !== "";
-
   return (
     <div className={styles.VidCropper}>
-      {!haveVid && <DropZone fileSelectedCb={loadVid} />}
-      {haveVid && (
-        <>
-          <SelectionContainer
-            className={styles.test}
-            selections={cropData as Box[]}
-            onSelectionChange={handleSelectionChange}
-            selecting={selecting}
-            showSelections
-            ratio={vidRatio}
-          >
-            <video
-              ref={videoRef}
-              src={vidSrc}
-              controls={!selecting}
-              playsInline
-              muted
-            />
-          </SelectionContainer>
-          {timeRangeMax > 0 && (
-            <div className={styles.RangeContainer}>
-              <span>Clip Range</span>
-              {/* TODO Might be better to use https://zillow.github.io/react-slider/ */}
-              <MultiRangeSlider
-                min={0}
-                max={timeRangeMax}
-                step={0.01}
-                convertValCb={secToStr}
-                onChange={handleRangeChange}
-              />
-            </div>
-          )}
-        </>
-      )}
+      <VideoControl
+        selecting={selecting}
+        crops={cropData}
+        setCrops={setCropData}
+        vidRef={videoRef}
+        vidSrc={vidSrc}
+        setVidSrc={setVidSrc}
+        startTime={startTime}
+        setStartTime={setStartTime}
+        stopTime={stopTime}
+        setStopTime={setStopTime}
+      />
 
       <Card>
         <CropControls

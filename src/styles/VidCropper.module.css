@@ -13,11 +13,6 @@
     max-width: 100cqw;
 }
 
-.VidCropper .test {
-    /* background-color: red; */
-
-}
-
 .VidCropper .RangeContainer {
     --spacing: 1rem;
     container-type: inline-size;
