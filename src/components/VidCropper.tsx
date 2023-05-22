@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
 import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
@@ -17,6 +16,7 @@ import styles from "@/styles/VidCropper.module.css";
 import CropResults from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
+import DropZone from "./DropZone";
 
 type Props = {};
 
@@ -62,18 +62,6 @@ function FramesParseObjToCrop(obj: FramesParseObj): Crop {
   };
 }
 
-const baseStyle = {
-  display: "flex",
-  flexDirection: "column" as const, // Tyescript complains otherwise...
-  justifyContent: "center",
-  backgroundColor: "var(--card-bg)",
-  color: "var(--card-fg)",
-  outline: "none",
-  cursor: "pointer",
-  height: "10rem",
-  width: "20rem",
-};
-
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
@@ -99,10 +87,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [parseProgress, setParseProgress] = useState<number>(100);
 
   const { width = 1, height = 1 } = useThrottledResizeObserver(500, videoRef);
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: { "video/*": [] },
-    multiple: false,
-  });
 
   const vidRatio = useMemo(() => {
     return {
@@ -129,11 +113,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     watch,
     formState: { errors },
   } = useForm<ParseDetails>();
-
-  useEffect(() => {
-    const file = acceptedFiles[0];
-    loadVid(file);
-  }, [JSON.stringify(acceptedFiles)]);
 
   function ffmpegProgressCb(progress: { ratio: number }) {
     setParseProgress(progress.ratio * 100);
@@ -227,24 +206,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
   }
 
+  const haveVid = vidSrc !== "";
+
   return (
     <div className={styles.VidCropper}>
-      {vidSrc === "" && (
-        <div>
-          <div
-            {...getRootProps({
-              className: "dropzone gradient-border",
-              style: { ...baseStyle },
-            })}
-          >
-            <input {...getInputProps()} />
-            <p>Drag a Video here</p>
-            <p>or</p>
-            <p>Click to select a file</p>
-          </div>
-        </div>
-      )}
-      {vidSrc !== "" && (
+      {!haveVid && <DropZone fileSelectedCb={loadVid} />}
+      {haveVid && (
         <>
           <SelectionContainer
             className={styles.test}
