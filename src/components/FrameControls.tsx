@@ -1,13 +1,22 @@
 import React, { useState } from "react";
+import Button from "@mui/material/Button";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup/";
 import Tooltip from "@mui/material/Tooltip";
 import { NextComponentType } from "next/types";
+import { OutputMode } from "@/hooks/useFFmpeg";
 
 import styles from "@/styles/FrameControls.module.css";
-import { textFieldStyle, toggleStyle } from "@/styles/MuiStyleObjs";
-import Button from "@mui/material/Button";
+import {
+  labelStyle,
+  selectStyle,
+  textFieldStyle,
+  toggleStyle,
+} from "@/styles/MuiStyleObjs";
 
 export type FrameRateMode = "custom" | "video";
 
@@ -15,6 +24,7 @@ export type FrameControlValues = {
   frameCount: number;
   frameRateMode: FrameRateMode;
   frameRate?: number;
+  outputMode: OutputMode;
 };
 
 type Props = {
@@ -30,16 +40,22 @@ const FrameControls: NextComponentType<
   const [fpsMode, setFpsMode] = useState<FrameRateMode>("video");
   const [fps, setFps] = useState<number>(1);
   const [frameCount, setFrameCount] = useState<number>(10);
+  const [output, setOutput] = useState<OutputMode>("png");
 
   function handleCrop(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ): void {
-    props.cropCb({ frameCount, frameRateMode: fpsMode, frameRate: fps });
+    props.cropCb({
+      frameCount,
+      frameRateMode: fpsMode,
+      frameRate: fps,
+      outputMode: output,
+    });
   }
 
   return (
     <div className={styles.container}>
-      <h2>Frame Controls</h2>
+      <h2>Output Options</h2>
       <div className={styles.frameControls}>
         <span className={styles.label}>FPS</span>
         <span className={styles.fpsControl}>
@@ -91,6 +107,23 @@ const FrameControls: NextComponentType<
             type: "number",
           }}
         />
+        <InputLabel id="fileOutType" sx={labelStyle}>
+          Out File
+        </InputLabel>
+        <Select
+          labelId="fileOutType"
+          id="select"
+          value={output}
+          onChange={(e) => setOutput(e.target.value as OutputMode)}
+          sx={selectStyle}
+          size="small"
+        >
+          <MenuItem value="png">png</MenuItem>
+          <MenuItem value="jpg">jpg</MenuItem>
+          <MenuItem value="bmp">bmp</MenuItem>
+          <MenuItem value="gif">gif</MenuItem>
+          <MenuItem value="video">video</MenuItem>
+        </Select>
       </div>
       <Tooltip
         arrow

@@ -9,14 +9,18 @@ export const toggleStyle = {
   },
   "&:hover": {
     background: "var(--gradient-bg)",
-    color: "white",
+    color: "var(--card-fg)",
+  },
+};
+
+export const baseColor = {
+  "& .MuiInputBase-root": {
+    color: "var(--card-fg)",
   },
 };
 
 export const textFieldStyle = {
-  "& .MuiInputBase-root": {
-    color: "var(--card-fg)",
-  },
+  ...baseColor,
   "& .MuiOutlinedInput-root": {
     "& fieldset": {
       borderColor: "var(--card-fg)",
@@ -27,5 +31,23 @@ export const textFieldStyle = {
     "&.Mui-focused fieldset": {
       borderColor: "primary.dark",
     },
+  },
+};
+
+export const labelStyle = {
+  color: "var(--card-fg)",
+  whiteSpace: "unset",
+};
+
+export const selectStyle = {
+  color: "var(--card-fg)",
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--card-fg)",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--card-fg)",
+  },
+  "& .MuiSvgIcon-root": {
+    color: "var(--card-fg)",
   },
 };

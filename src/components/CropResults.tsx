@@ -10,6 +10,7 @@ import { fetchAndZipImg } from "@/utils/files";
 import styles from "@/styles/CropResults.module.css";
 import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
+import { ImgType, ImgTypes } from "@/hooks/useFFmpeg";
 
 type Props = {
   cropResults: CropResult[];
@@ -46,10 +47,18 @@ function downloadCrops(results: CropResult[]): void {
 function groupResults(cropResults: CropResult[]) {
   const resultMap = createAutoArrayMap<string>();
 
+  const isVid = (ext: string) => !ImgTypes.includes(ext) && ext !== "gif";
+
+  let tagType = "";
+
   // group our urls by crop name
   cropResults.map((result) => {
     resultMap[result.name ?? ""].push(result.url);
+    // assuming all results are the same output type
+    if (tagType === "") tagType = isVid(result.ext) ? "video" : "img";
   });
+
+  const vid = tagType === "video";
 
   // get group names
   const keys = Array.from(Reflect.ownKeys(resultMap) as string[]);
@@ -58,9 +67,23 @@ function groupResults(cropResults: CropResult[]) {
   return keys.map((key) => (
     <div className={styles.cropGroup} key={key}>
       <h3>{key}</h3>
-      {resultMap[key].map((url, idx) => (
-        <img src={url} key={url} alt={`${url} result ${idx}`} />
-      ))}
+      {resultMap[key].map((url, idx) => {
+        if (vid) {
+          return (
+            <video
+              muted
+              playsInline
+              controls
+              autoPlay
+              loop
+              src={url}
+              key={url}
+            />
+          );
+        } else {
+          return <img src={url} key={url} alt={`${url} result ${idx}`} />;
+        }
+      })}
     </div>
   ));
 }

@@ -32,15 +32,18 @@ export const PARSE_PREFIX = "parse_";
 
 // parse name out of filenames with format parse_{name}_{count}.{ext}
 function getParseName(file: string) {
-  const pattern = "parse_(.+?)_(\\d+).(.+$)";
+  const pattern = "parse_(.+?)(_(\\d+))*\\.(.+)"; // beware autoformat destroys this line replacing ' with " and then \ gets used as an escape
   const matches = file.match(pattern);
   const name = matches ? matches[1] : "";
-  const idx = matches ? Number(matches[2]) : 0;
-  const ext = matches ? matches[3] : "";
+  const idx = matches ? Number(matches[3]) : 0;
+  const ext = matches ? matches[4] : "";
   return { name, idx, ext };
 }
 
-export type ImgType = "png" | "jpg" | "bmp";
+// TODO improve these types
+export const ImgTypes = ["png", "jpg", "bmp"]; // Can't use as const because ImgTypes goes undefined at import for some reason
+const ImgTypesInfer = ["png", "jpg", "bmp"] as const; // Duplicate array as const to allow ts to infer types...
+export type ImgType = (typeof ImgTypesInfer)[number];
 export type OutputMode = ImgType | "gif" | "video";
 
 export function generateFFmpegCommand(
