@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
+import useFFmpeg, { Crop, OutputMode } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
 import { Json } from "./CropFileLoader";
@@ -59,6 +59,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [startTime, setStartTime] = useState<number>(0);
   const [stopTime, setStopTime] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  // TODO put a ui on output and fix video preview/zip, test gif zip
+  const [output, setOutput] = useState<OutputMode>("png");
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
 
@@ -130,7 +132,14 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     const file = videoRef.current?.src ?? "";
     setCropResults([]);
     setLoading(true);
-    parseVideo(file, cropData, details, handleCropResults, ffmpegProgressCb);
+    parseVideo(
+      file,
+      cropData,
+      details,
+      handleCropResults,
+      output,
+      ffmpegProgressCb
+    );
   }
 
   return (

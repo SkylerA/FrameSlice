@@ -40,16 +40,18 @@ function getParseName(file: string) {
   return { name, idx, ext };
 }
 
+export type ImgType = "png" | "jpg" | "bmp";
+export type OutputMode = ImgType | "gif" | "video";
+
 export function generateFFmpegCommand(
   file: string,
   crops: Crop[],
-  details: ParseDetails
+  details: ParseDetails,
+  output: OutputMode
 ) {
   const singleSpace = (str: string) => str.replace(/( )+/g, " ");
   const filterChains: string[] = [];
   const outputMappings: string[] = [];
-  // const imgExt = "png";
-  const imgExt = "jpg";
 
   // Get ffmpeg vars
   const frameRate = details.frameRate ? `-r ${details.frameRate}` : "";
@@ -61,11 +63,29 @@ export function generateFFmpegCommand(
   crops.forEach((crop, index) => {
     const { x, y, width, height, name = "" } = crop;
     const crop_name = name == "" ? `crop_${x}_${y}_${width}_${height}` : name;
+
+    // img output string or undefined
+    const imgOut = ["jpg", "png", "bmp"].includes(output)
+      ? `${PARSE_PREFIX}${crop_name}_%d.${output}`
+      : undefined;
+
+    // gif output string or undefined
+    const gifOut =
+      "gif" === output ? `${PARSE_PREFIX}${crop_name}.gif` : undefined;
+
+    // vid output string or undefined
+    const fileExt = file.slice(file.lastIndexOf(".") + 1);
+    const vidOut =
+      "video" === output ? `${PARSE_PREFIX}${crop_name}.${fileExt}` : undefined;
+
+    // get output str in format of whatever mode was given
+    const outputStr = imgOut ?? gifOut ?? vidOut;
+
     filterChains.push(`[0:v]crop=${width}:${height}:${x}:${y}[out${index}]`);
     outputMappings.push(
       // TODO decide if vsync 0 should be included
       // TODO see if exporting to bmp can speed up loop by not encoding pixels
-      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${PARSE_PREFIX}${crop_name}_%d.${imgExt}`
+      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${outputStr}`
     );
   });
 
@@ -110,6 +130,7 @@ export default function useFFmpeg() {
     crops: Crop[],
     details: ParseDetails,
     resultsCb: ParseFrameCb,
+    output: OutputMode,
     progressCb: ProgressCallback = emptyCb
   ) {
     await load();
@@ -125,7 +146,7 @@ export default function useFFmpeg() {
     const cmd =
       override !== ""
         ? override
-        : generateFFmpegCommand("file.mp4", crops, details);
+        : generateFFmpegCommand("file.mp4", crops, details, output);
     const args = cmd.split(" ").slice(1);
     // execute ffmpeg command
     console.log("💻running ffmpeg cmd: ", cmd);
