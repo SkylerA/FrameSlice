@@ -53,6 +53,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
   const cropFileRef = useRef<HTMLInputElement>(null);
+  const triggerFileInput = () => {
+    if (cropFileRef.current) {
+      cropFileRef.current.value = "";
+      cropFileRef.current.click();
+    }
+  };
 
   return (
     <div>
@@ -60,7 +66,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         sx={{ textTransform: "none" }}
         className="gradient-bg"
         variant="contained"
-        onClick={() => cropFileRef.current?.click()}
+        onClick={triggerFileInput}
       >
         Load Crop File
       </Button>
