@@ -185,10 +185,15 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       frameVals.frameRateMode === "custom"
         ? { frameRate: frameVals.frameRate }
         : {};
-    const frameCount =
-      frameVals.frameCount > 0 ? { frameCount: frameVals.frameCount } : {};
+    const limit = frameVals.limit > 0 ? { limit: frameVals.limit } : {};
 
-    const details = { ...frameRate, ...frameCount, startTime, stopTime };
+    const details = {
+      ...frameRate,
+      startTime,
+      stopTime,
+      limitMode: frameVals.limitMode,
+      ...limit,
+    };
     const file = videoRef.current?.src ?? "";
     setCropResults([]);
     setLoading(true);

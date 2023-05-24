@@ -19,7 +19,8 @@ export type Crop = {
 
 export type ParseDetails = {
   presetName?: string;
-  frameCount?: number;
+  limit?: number;
+  limitMode?: string;
   startTime?: number;
   stopTime?: number;
   frameRate?: number;
@@ -61,7 +62,15 @@ export function generateFFmpegCommand(
   const seekStart = details.startTime ? `-ss ${details.startTime}` : "";
   // TODO add logic on client side to not send stopTime if it matches the end time
   const seekEnd = details.stopTime ? `-to ${details.stopTime}` : "";
-  const frames = details.frameCount ? `-vframes ${details.frameCount}` : "";
+
+  // set -vframes if limitMode is frames
+  const frames =
+    details.limit && details.limitMode === "frames"
+      ? `-vframes ${Math.floor(details.limit)}`
+      : "";
+
+  // set -t if a limitMode of time was given
+  const seekSpan = details.limitMode === "time" ? `-t ${details.limit}` : "";
 
   // Generate crop and map strings for each request
   crops.forEach((crop, index) => {
@@ -121,7 +130,7 @@ export function generateFFmpegCommand(
   // Build input/seek string
   // Keep seek in front of -i for fast seeking
   // TODO need to see if frame is accurate after seek though, in the past seeking cut at keyframes which could result in lost frames for a given range
-  const seekRange = `${seekStart} ${seekEnd}`;
+  const seekRange = `${seekStart} ${seekEnd} ${seekSpan}`;
   const seek = `${seekRange} -i ${file}`;
 
   // Build full cmd

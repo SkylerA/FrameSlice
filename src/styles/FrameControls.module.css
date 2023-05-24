@@ -6,9 +6,11 @@
     width: min-content;
 }
 
-.frameControls .fpsControl {
+.frameControls .fpsControl,
+.frameControls .limitControl {
     display: flex;
     flex-wrap: nowrap;
+    gap: .25rem;
 }
 
 .frameControls .fpsControl input {

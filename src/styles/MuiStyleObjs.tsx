@@ -21,6 +21,11 @@ export const baseColor = {
 
 export const textFieldStyle = {
   ...baseColor,
+  minWidth: "5rem",
+  width: "100%", // Fixes fps input field not filling area
+  "& .MuiInputLabel-root": {
+    color: "var(--card-fg)",
+  },
   "& .MuiOutlinedInput-root": {
     "& fieldset": {
       borderColor: "var(--card-fg)",

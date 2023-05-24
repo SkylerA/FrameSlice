@@ -19,10 +19,12 @@ import {
 } from "@/styles/MuiStyleObjs";
 
 export type FrameRateMode = "custom" | "video";
+export type LimitMode = "none" | "frames" | "time";
 
 export type FrameControlValues = {
-  frameCount: number;
+  limit: number;
   frameRateMode: FrameRateMode;
+  limitMode: LimitMode;
   frameRate?: number;
   outputMode: OutputMode;
 };
@@ -38,16 +40,18 @@ const FrameControls: NextComponentType<
   Props
 > = (props: Props) => {
   const [fpsMode, setFpsMode] = useState<FrameRateMode>("video");
+  const [limitMode, setLimitMode] = useState<LimitMode>("frames");
   const [fps, setFps] = useState<number>(1);
-  const [frameCount, setFrameCount] = useState<number>(10);
+  const [limit, setLimit] = useState<number>(10);
   const [output, setOutput] = useState<OutputMode>("png");
 
   function handleCrop(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ): void {
     props.cropCb({
-      frameCount,
+      limit: limit,
       frameRateMode: fpsMode,
+      limitMode: limitMode,
       frameRate: fps,
       outputMode: output,
     });
@@ -55,7 +59,7 @@ const FrameControls: NextComponentType<
 
   return (
     <div className={styles.container}>
-      <h2>Output Options</h2>
+      <h2>Options</h2>
       <div className={styles.frameControls}>
         <span className={styles.label}>FPS</span>
         <span className={styles.fpsControl}>
@@ -91,25 +95,50 @@ const FrameControls: NextComponentType<
         </span>
         <Tooltip
           arrow
-          title="Stop at Xth frame instead of cropping through full Clip Range. 0 to use Clip Range"
+          title="Stop processing after X frames or seconds. 'None' will use the full Clip Range set above."
         >
-          <span className={styles.label}>Frame Limit</span>
+          <span className={styles.label}>Limit</span>
         </Tooltip>
-        <TextField
-          size="small"
-          value={frameCount}
-          sx={textFieldStyle}
-          onChange={(e) => setFrameCount(Number(e.currentTarget.value))}
-          inputProps={{
-            step: 1,
-            min: 0,
-            max: 1000,
-            type: "number",
-          }}
-        />
-        <InputLabel id="fileOutType" sx={labelStyle}>
-          Out File
-        </InputLabel>
+        <span className={styles.limitControl}>
+          <ToggleButtonGroup
+            size="small"
+            color="primary"
+            value={limitMode}
+            exclusive
+            onChange={(e, value) => setLimitMode(value)}
+            aria-label="Frame/Time limit"
+          >
+            <ToggleButton value="frames" className="test" sx={toggleStyle}>
+              Frames
+            </ToggleButton>
+            <ToggleButton value="time" sx={toggleStyle}>
+              Time
+            </ToggleButton>
+            <ToggleButton value="none" sx={toggleStyle}>
+              None
+            </ToggleButton>
+          </ToggleButtonGroup>
+          {limitMode !== "none" && (
+            <TextField
+              label={limitMode === "frames" ? "Frames" : "Seconds"}
+              size="small"
+              value={limit}
+              sx={textFieldStyle}
+              onChange={(e) => {
+                let val = Number(e.currentTarget.value);
+                if (limitMode === "frames") val = Math.floor(val);
+                setLimit(val);
+              }}
+              inputProps={{
+                step: 1,
+                min: 0,
+                max: 10000,
+                type: "number",
+              }}
+            />
+          )}
+        </span>
+        <span className={styles.label}>Output</span>
         <Select
           labelId="fileOutType"
           id="select"
