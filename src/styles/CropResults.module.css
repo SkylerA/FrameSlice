@@ -7,3 +7,9 @@
 .cropResults img {
     max-width: 100%
 }
+
+.cropGroup .result {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}

@@ -17,11 +17,12 @@ type Props = {
   loading: boolean;
 };
 
-type CropResult = {
+export type CropResult = {
   url: string;
   name: string | undefined;
   idx: number;
   ext: string;
+  classIdx?: number;
 };
 
 function downloadCrops(results: CropResult[]): void {
@@ -45,7 +46,10 @@ function downloadCrops(results: CropResult[]): void {
 }
 
 function groupResults(cropResults: CropResult[]) {
-  const resultMap = createAutoArrayMap<string>();
+  const resultMap = createAutoArrayMap<{
+    url: string;
+    classIdx: number | undefined;
+  }>();
 
   const isVid = (ext: string) => !ImgTypes.includes(ext) && ext !== "gif";
 
@@ -53,7 +57,10 @@ function groupResults(cropResults: CropResult[]) {
 
   // group our urls by crop name
   cropResults.map((result) => {
-    resultMap[result.name ?? ""].push(result.url);
+    resultMap[result.name ?? ""].push({
+      url: result.url,
+      classIdx: result.classIdx,
+    });
     // assuming all results are the same output type
     if (tagType === "") tagType = isVid(result.ext) ? "video" : "img";
   });
@@ -67,7 +74,8 @@ function groupResults(cropResults: CropResult[]) {
   return keys.map((key) => (
     <div className={styles.cropGroup} key={key}>
       <h3>{key}</h3>
-      {resultMap[key].map((url, idx) => {
+      {resultMap[key].map((obj, idx) => {
+        const { url, classIdx } = obj;
         if (vid) {
           return (
             <video
@@ -81,7 +89,12 @@ function groupResults(cropResults: CropResult[]) {
             />
           );
         } else {
-          return <img src={url} key={url} alt={`${url} result ${idx}`} />;
+          return (
+            <span className={styles.result} key={url}>
+              <img src={url} key={url} alt={`${url} result ${idx}`} />
+              {classIdx}
+            </span>
+          );
         }
       })}
     </div>

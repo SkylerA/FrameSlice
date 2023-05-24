@@ -1,15 +1,22 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { NextComponentType } from "next";
 import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
 import { Json } from "./CropFileLoader";
-import CropResults from "./CropResults";
+import CropResults, { CropResult } from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
 import VideoControl from "./VideoControl";
+import mime from "mime/lite";
+import async, { AsyncResultArrayCallback } from "async";
 
 import styles from "@/styles/VidCropper.module.css";
+
+// Tensorflow
+import { GraphModel } from "@tensorflow/tfjs-converter";
+import { IOHandler } from "@tensorflow/tfjs-core/dist/io/types";
+import { inferImage, loadModel } from "@/utils/models";
 
 type Props = {};
 
@@ -23,15 +30,9 @@ type FramesCrop = {
 type FramesParseObj = {
   crop: FramesCrop;
   filterName?: string;
+  presetName?: string;
   UID?: string;
   procParams: { parseProcName: string; proc_kwargs: unknown };
-};
-
-type CropResult = {
-  url: string;
-  name: string | undefined;
-  idx: number;
-  ext: string;
 };
 
 function freeUrls(results: CropResult[]) {
@@ -39,13 +40,14 @@ function freeUrls(results: CropResult[]) {
 }
 
 function FramesParseObjToCrop(obj: FramesParseObj): Crop {
-  const { crop, filterName, UID } = obj;
+  const { crop, filterName, presetName, UID } = obj;
+  const name = filterName ?? presetName ?? UID ?? "";
   return {
     x: crop.xOff,
     y: crop.yOff,
     width: crop.cropW,
     height: crop.cropH,
-    name: filterName ?? UID ?? "",
+    name,
   };
 }
 
@@ -59,6 +61,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [startTime, setStartTime] = useState<number>(0);
   const [stopTime, setStopTime] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [model, setModel] = useState<GraphModel | null>(null);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
 
@@ -80,20 +83,21 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     setParseProgress(progress.ratio * 100);
   }
 
-  const handleCropResults = async (files: string[], ffmpeg: FFmpeg) => {
+  const storeCropsNoInfer = async (files: string[], ffmpeg: FFmpeg) => {
     freeUrls(cropResults); // Free previous crop img memory
 
     const newResults = [];
     for (const file of files) {
       // load next image
       const data = ffmpeg.FS("readFile", file);
-      const blob = new Blob([data.buffer], { type: "image/png" });
+      const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
+      const blob = new Blob([data.buffer], { type });
 
       // Create a URL
       const url = URL.createObjectURL(blob);
       const { name, idx, ext } = getParseName(file) ?? "";
 
-      // clean up the ffmpeg files
+      // clean up the ffmpeg file
       ffmpeg.FS("unlink", file);
 
       newResults.push({ url, name, idx, ext });
@@ -105,6 +109,64 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         setCropResults(newResults.slice());
       }
     }
+
+    setLoading(false);
+    setCropResults(newResults);
+  };
+
+  function storeModel(graphModel: GraphModel<string | IOHandler>): void {
+    setModel(graphModel);
+  }
+
+  const inferCrops = async (files: string[], ffmpeg: FFmpeg) => {
+    console.time("loaded model");
+    const graphModel = model ?? (await loadModel(storeModel));
+    console.timeEnd("loaded model");
+    freeUrls(cropResults); // Free previous crop img memory
+
+    console.time("parsing/inference");
+    const newResults: CropResult[] = [];
+    const inferPromises: Promise<void>[] = [];
+    for (const file of files) {
+      // load next image
+      const data = ffmpeg.FS("readFile", file);
+      const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
+      const blob = new Blob([data.buffer], { type });
+
+      // Create a URL
+      const url = URL.createObjectURL(blob);
+      const { name, idx, ext } = getParseName(file) ?? "";
+
+      // clean up the ffmpeg file
+      ffmpeg.FS("unlink", file);
+
+      // newResults.push({ url, name, idx, ext });
+
+      if (ext !== "gif" && ext !== "video") {
+        const inferPromise = inferImage(url, graphModel).then((val) => {
+          newResults.push({ url, name, idx, ext, classIdx: val });
+        });
+        inferPromises.push(inferPromise);
+      } else {
+        newResults.push({ url, name, idx, ext });
+      }
+
+      // update the results in chunks to avoid some thrash
+      const imgChunks = 10;
+      if (newResults.length % imgChunks === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0)); // Allow time for re-render
+        setCropResults(newResults.slice());
+        console.log("not sure this works anymore");
+      }
+    }
+
+    if (inferPromises.length > 0) {
+      // wait for all inference steps to finish
+      await Promise.all(inferPromises);
+      console.log("🛑done");
+    }
+
+    console.timeEnd("parsing/inference");
 
     setLoading(false);
     setCropResults(newResults);
@@ -134,7 +196,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       file,
       cropData,
       details,
-      handleCropResults,
+      storeCropsNoInfer,
       frameVals.outputMode,
       ffmpegProgressCb
     );

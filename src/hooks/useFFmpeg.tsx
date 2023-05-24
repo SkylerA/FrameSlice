@@ -28,14 +28,14 @@ export type ParseDetails = {
 
 export type ParseFrameCb = (parseFiles: string[], ffmpeg: FFmpeg) => void;
 
-export const PARSE_PREFIX = "parse_";
+export const PARSE_PREFIX = "parse";
 
 // parse name out of filenames with format parse_{name}_{count}.{ext}
 function getParseName(file: string) {
-  const pattern = "parse_(.+?)(_(\\d+))*\\.(.+)"; // beware autoformat destroys this line replacing ' with " and then \ gets used as an escape
+  const pattern = "parse(-(\\d+))*_(.+)\\.([\\w|\\d]+)"; // beware autoformat destroys this line replacing ' with " and then \ gets used as an escape
   const matches = file.match(pattern);
-  const name = matches ? matches[1] : "";
-  const idx = matches ? Number(matches[3]) : 0;
+  const name = matches ? matches[3] : "";
+  const idx = matches ? Number(matches[2]) : 0;
   const ext = matches ? matches[4] : "";
   return { name, idx, ext };
 }
@@ -59,6 +59,7 @@ export function generateFFmpegCommand(
   // Get ffmpeg vars
   const frameRate = details.frameRate ? `-r ${details.frameRate}` : "";
   const seekStart = details.startTime ? `-ss ${details.startTime}` : "";
+  // TODO add logic on client side to not send stopTime if it matches the end time
   const seekEnd = details.stopTime ? `-to ${details.stopTime}` : "";
   const frames = details.frameCount ? `-vframes ${details.frameCount}` : "";
 
@@ -69,26 +70,43 @@ export function generateFFmpegCommand(
 
     // img output string or undefined
     const imgOut = ["jpg", "png", "bmp"].includes(output)
-      ? `${PARSE_PREFIX}${crop_name}_%d.${output}`
+      ? `${PARSE_PREFIX}-%d_${crop_name}.${output}`
       : undefined;
 
     // gif output string or undefined
     const gifOut =
-      "gif" === output ? `${PARSE_PREFIX}${crop_name}.gif` : undefined;
+      "gif" === output ? `${PARSE_PREFIX}_${crop_name}.gif` : undefined;
 
     // vid output string or undefined
     const fileExt = file.slice(file.lastIndexOf(".") + 1);
     const vidOut =
-      "video" === output ? `${PARSE_PREFIX}${crop_name}.${fileExt}` : undefined;
+      "video" === output
+        ? `${PARSE_PREFIX}_${crop_name}.${fileExt}`
+        : undefined;
 
     // get output str in format of whatever mode was given
     const outputStr = imgOut ?? gifOut ?? vidOut;
 
-    filterChains.push(`[0:v]crop=${width}:${height}:${x}:${y}[out${index}]`);
+    const outTag = `out${index}`;
+    const cropStr = `[0:v]crop=${width}:${height}:${x}:${y}[${outTag}]`;
+
+    let addOnStr = "";
+    let mapTag = "";
+
+    // TODO This is initial work on improving gif quality with palettes, but it seems like too long of a clip causes a hang so need to research this more
+    // If gif, add some palettegen commands to improve gif quality
+    // if (gifOut) {
+    //   mapTag = "f";
+    //   const gifPaletteStr = `;[${outTag}]split[${outTag}orig][${outTag}temp];[${outTag}temp]palettegen[${outTag}p];[${outTag}orig][${outTag}p]paletteuse[${outTag}${mapTag}]`;
+    //   addOnStr = gifOut ? gifPaletteStr : "";
+    // }
+
+    // Create and store full filter string
+    const filterStr = `${cropStr}${addOnStr}`;
+    filterChains.push(`${filterStr}`);
+
     outputMappings.push(
-      // TODO decide if vsync 0 should be included
-      // TODO see if exporting to bmp can speed up loop by not encoding pixels
-      `-map [out${index}] ${frameRate} ${frames} -vsync 2 ${outputStr}`
+      `-map [out${index}${mapTag}] ${frameRate} ${frames} -vsync 2 ${outputStr}`
     );
   });
 
