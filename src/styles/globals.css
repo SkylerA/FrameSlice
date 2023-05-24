@@ -2,9 +2,10 @@
   --dark-fill: #222;
   --dark-highlight-fill: #333;
 
+  --primary-fg: #d7d7d7;
   --primary-bg: var(--dark-fill);
   --card-bg: var(--dark-highlight-fill);
-  --card-fg: #d7d7d7;
+  --card-fg: var(--primary-fg);
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
   --track-color-left: #007bfe;
@@ -38,7 +39,7 @@ body {
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: var(--primary-fg);
   background: var(--primary-bg);
 }
 
