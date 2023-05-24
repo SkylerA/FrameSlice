@@ -179,7 +179,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       setCropData(crops);
     }
   }
-  // TODO useCallback
+  // TODO  useCallback
   function cropVidCb(frameVals: FrameControlValues): void {
     const frameRate =
       frameVals.frameRateMode === "custom"
