@@ -65,7 +65,9 @@ const FrameControls: NextComponentType<
             color="primary"
             value={fpsMode}
             exclusive
-            onChange={(e, value) => setFpsMode(value)}
+            onChange={(e, value) => {
+              if (value) setFpsMode(value);
+            }}
             aria-label="FPS"
           >
             <ToggleButton value="video" className="test" sx={toggleStyle}>
@@ -102,7 +104,9 @@ const FrameControls: NextComponentType<
             color="primary"
             value={limitMode}
             exclusive
-            onChange={(e, value) => setLimitMode(value)}
+            onChange={(e, value) => {
+              if (value) setLimitMode(value);
+            }}
             aria-label="Frame/Time limit"
           >
             <ToggleButton value="frames" className="test" sx={toggleStyle}>
