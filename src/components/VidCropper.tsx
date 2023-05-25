@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { NextComponentType } from "next";
 import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
@@ -9,7 +9,6 @@ import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
 import VideoControl from "./VideoControl";
 import mime from "mime/lite";
-import async, { AsyncResultArrayCallback } from "async";
 
 import styles from "@/styles/VidCropper.module.css";
 
@@ -17,38 +16,12 @@ import styles from "@/styles/VidCropper.module.css";
 import { GraphModel } from "@tensorflow/tfjs-converter";
 import { IOHandler } from "@tensorflow/tfjs-core/dist/io/types";
 import { inferImage, loadModel } from "@/utils/models";
+import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
 
 type Props = {};
 
-type FramesCrop = {
-  cropH: string;
-  cropW: string;
-  xOff: string;
-  yOff: string;
-};
-
-type FramesParseObj = {
-  crop: FramesCrop;
-  filterName?: string;
-  presetName?: string;
-  UID?: string;
-  procParams: { parseProcName: string; proc_kwargs: unknown };
-};
-
 function freeUrls(results: CropResult[]) {
   results.map((result) => URL.revokeObjectURL(result.url));
-}
-
-function FramesParseObjToCrop(obj: FramesParseObj): Crop {
-  const { crop, filterName, presetName, UID } = obj;
-  const name = filterName ?? presetName ?? UID ?? "";
-  return {
-    x: crop.xOff,
-    y: crop.yOff,
-    width: crop.cropW,
-    height: crop.cropH,
-    name,
-  };
 }
 
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (

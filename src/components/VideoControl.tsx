@@ -76,7 +76,7 @@ const VideoControl = (props: Props) => {
   const haveVid = props.vidSrc !== "";
 
   return (
-    <>
+    <div className={styles.VideoControl}>
       {!haveVid && <DropZone fileSelectedCb={loadVid} />}
       {haveVid && (
         <>
@@ -111,7 +111,7 @@ const VideoControl = (props: Props) => {
           )}
         </>
       )}
-    </>
+    </div>
   );
 };
 

@@ -46,6 +46,8 @@ export const ImgTypes = ["png", "jpg", "bmp"]; // Can't use as const because Img
 const ImgTypesInfer = ["png", "jpg", "bmp"] as const; // Duplicate array as const to allow ts to infer types...
 export type ImgType = (typeof ImgTypesInfer)[number];
 export type OutputMode = ImgType | "gif" | "video";
+export type LimitMode = "none" | "frames" | "time";
+export type FrameRateMode = "custom" | "video";
 
 export function generateFFmpegCommand(
   file: string,

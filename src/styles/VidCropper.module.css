@@ -9,22 +9,6 @@
     padding-bottom: 1rem;
 }
 
-.VidCropper video {
-    max-width: 100cqw;
-}
-
-.VidCropper .RangeContainer {
-    --spacing: 1rem;
-    container-type: inline-size;
-    width: 100%;
-    color: var(--card-fg);
-    display: flex;
-    gap: var(--spacing);
-    align-items: center;
-    padding: 0rem var(--spacing);
-
-}
-
 .VidCropper .cropGroup {
     display: grid;
     align-content: space-between;

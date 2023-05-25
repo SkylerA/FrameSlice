@@ -8,7 +8,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup/";
 import Tooltip from "@mui/material/Tooltip";
 import { NextComponentType } from "next/types";
-import { OutputMode } from "@/hooks/useFFmpeg";
+import { FrameRateMode, LimitMode, OutputMode } from "@/hooks/useFFmpeg";
 
 import styles from "@/styles/FrameControls.module.css";
 import {
@@ -17,9 +17,6 @@ import {
   textFieldStyle,
   toggleStyle,
 } from "@/styles/MuiStyleObjs";
-
-export type FrameRateMode = "custom" | "video";
-export type LimitMode = "none" | "frames" | "time";
 
 export type FrameControlValues = {
   limit: number;
