@@ -35,6 +35,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [stopTime, setStopTime] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [model, setModel] = useState<GraphModel | null>(null);
+  const [parseProgress, setParseProgress] = useState<number>(0);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
 
@@ -47,7 +48,6 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [parseProgress, setParseProgress] = useState<number>(100);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =

@@ -1,6 +1,5 @@
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import CircularProgress from "@mui/material/CircularProgress";
 import DownloadIcon from "@mui/icons-material/Download";
 import { NextComponentType } from "next";
 import ScrollOnShow from "./ScrollOnShow";
@@ -10,7 +9,8 @@ import { fetchAndZipImg } from "@/utils/files";
 import styles from "@/styles/CropResults.module.css";
 import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
-import { ImgType, ImgTypes } from "@/hooks/useFFmpeg";
+import { ImgTypes } from "@/hooks/useFFmpeg";
+import Progress from "./Progress";
 
 type Props = {
   cropResults: CropResult[];
@@ -135,13 +135,7 @@ const CropResults: NextComponentType<Record<string, never>, unknown, Props> = (
       {props.loading && (
         <>
           <ScrollOnShow />
-          <CircularProgress
-            variant={
-              (props.progress ?? 0) > 0 ? "determinate" : "indeterminate"
-            }
-            value={props.progress}
-            sx={{ color: "var(--track-color-right)" }}
-          />
+          <Progress value={props.progress} />
         </>
       )}
       <div className={styles.cropResults}>{crop_results_grouped}</div>
