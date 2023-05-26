@@ -37,3 +37,4 @@ next-env.d.ts
 # sma local
 TODO.md
 delMe_names
+.vscode/settings.json
