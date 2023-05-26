@@ -101,6 +101,10 @@ export function handleFFmpegProgress(
   }
 }
 
+export function freeUrls(results: { url: string }[]) {
+  results.map((result) => URL.revokeObjectURL(result.url));
+}
+
 // TODO improve these types
 export const ImgTypes = ["png", "jpg", "bmp"]; // Can't use as const because ImgTypes goes undefined at import for some reason
 const ImgTypesInfer = ["png", "jpg", "bmp"] as const; // Duplicate array as const to allow ts to infer types...

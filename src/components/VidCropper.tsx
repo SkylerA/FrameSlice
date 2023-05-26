@@ -1,6 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import useFFmpeg, { Crop, handleFFmpegProgress } from "@/hooks/useFFmpeg";
+import useFFmpeg, {
+  Crop,
+  freeUrls,
+  handleFFmpegProgress,
+} from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
 import { Json } from "./CropFileLoader";
@@ -19,10 +23,6 @@ import { inferImage, loadModel } from "@/utils/models";
 import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
 
 type Props = {};
-
-function freeUrls(results: CropResult[]) {
-  results.map((result) => URL.revokeObjectURL(result.url));
-}
 
 const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
