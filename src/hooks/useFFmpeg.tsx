@@ -77,7 +77,6 @@ export function handleFFmpegProgress(
   const prog_time = progress.time ?? 0;
   const stopTime = details.parseDetails.stopTime ?? 0;
   const startTime = details.parseDetails.startTime ?? 0;
-
   let percent = 0;
   if (details.parseDetails.limitMode === "frames") {
     const fps = getCurrFps();
@@ -90,8 +89,11 @@ export function handleFFmpegProgress(
     percent = (prog_time / limit) * 100;
   } else {
     const range = stopTime - startTime;
-    percent = (prog_time / range) * 100;
-    // percent = progress.ratio * 100;
+    if (range > 0) {
+      percent = (prog_time / range) * 100;
+    } else {
+      percent = progress.ratio * 100;
+    }
   }
   if (percent) {
     percent = clamp(Math.floor(percent), 0, 100);
