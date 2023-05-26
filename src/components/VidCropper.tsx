@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { NextComponentType } from "next";
-import useFFmpeg, { Crop } from "@/hooks/useFFmpeg";
+import useFFmpeg, { Crop, handleFFmpegProgress } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
 import { Json } from "./CropFileLoader";
@@ -19,9 +19,6 @@ import { inferImage, loadModel } from "@/utils/models";
 import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
 
 type Props = {};
-
-const clamp = (num: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, num));
 
 function freeUrls(results: CropResult[]) {
   results.map((result) => URL.revokeObjectURL(result.url));
@@ -57,30 +54,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     useFFmpeg();
 
   function ffmpegProgressCb(progress: { ratio: number; time?: number }) {
-    // setParseProgress(progress.ratio * 100);
-    const details = getRunDetails();
-    const limit = details.parseDetails.limit;
-    const prog_time = progress.time ?? 0;
-
-    let percent = 0;
-    if (details.parseDetails.limitMode === "frames") {
-      const fps = getFps();
-      const total_s = videoRef.current?.duration ?? 0;
-      const total_frames = fps * total_s;
-      const prog = Math.min(100, total_frames * progress.ratio);
-
-      percent = prog;
-    } else if (details.parseDetails.limitMode === "time" && limit) {
-      percent = (prog_time / limit) * 100;
-    } else {
-      const range = stopTime - startTime;
-      percent = (prog_time / range) * 100;
-      // percent = progress.ratio * 100;
-    }
-    if (percent) {
-      percent = clamp(Math.floor(percent), 0, 100);
-      setParseProgress(percent);
-    }
+    handleFFmpegProgress(progress, videoRef, setParseProgress);
   }
 
   const storeCropsNoInfer = async (files: string[], ffmpeg: FFmpeg) => {

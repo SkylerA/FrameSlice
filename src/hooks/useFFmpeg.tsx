@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, RefObject } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import type { FFmpeg, ProgressCallback } from "@ffmpeg/ffmpeg";
+import { clamp } from "@/utils/data";
 
 const ffmpeg_init = {
   log: false,
@@ -63,6 +64,39 @@ function getCurrFps() {
 
 function getRunDetails() {
   return currRun;
+}
+
+export function handleFFmpegProgress(
+  progress: { ratio: number; time?: number },
+  videoRef: RefObject<HTMLVideoElement>,
+  cb: (progress: number) => void
+) {
+  // setParseProgress(progress.ratio * 100);
+  const details = getRunDetails();
+  const limit = details.parseDetails.limit;
+  const prog_time = progress.time ?? 0;
+  const stopTime = details.parseDetails.stopTime ?? 0;
+  const startTime = details.parseDetails.startTime ?? 0;
+
+  let percent = 0;
+  if (details.parseDetails.limitMode === "frames") {
+    const fps = getCurrFps();
+    const total_s = videoRef.current?.duration ?? 0;
+    const total_frames = fps * total_s;
+    const prog = Math.min(100, total_frames * progress.ratio);
+
+    percent = prog;
+  } else if (details.parseDetails.limitMode === "time" && limit) {
+    percent = (prog_time / limit) * 100;
+  } else {
+    const range = stopTime - startTime;
+    percent = (prog_time / range) * 100;
+    // percent = progress.ratio * 100;
+  }
+  if (percent) {
+    percent = clamp(Math.floor(percent), 0, 100);
+    cb(percent);
+  }
 }
 
 // TODO improve these types
