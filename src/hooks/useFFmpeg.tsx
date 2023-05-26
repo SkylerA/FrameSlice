@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import type { FFmpeg, ProgressCallback } from "@ffmpeg/ffmpeg";
 
@@ -20,16 +20,24 @@ export type Crop = {
 export type ParseDetails = {
   presetName?: string;
   limit?: number;
-  limitMode?: string;
+  limitMode?: LimitMode;
   startTime?: number;
   stopTime?: number;
   frameRate?: number;
   ffmpegOverride?: string; // temp command for testing ffmpeg commands manually
 };
 
+export type RunDetails = {
+  parseDetails: ParseDetails;
+  crops: Crop[];
+};
+
 export type ParseFrameCb = (parseFiles: string[], ffmpeg: FFmpeg) => void;
 
 export const PARSE_PREFIX = "parse";
+// currently using globals so that calling code can access mid run info even though ffmpeg is in a tight loop where state updates won't propagate
+let globalFps = -1;
+let currRun: RunDetails = { parseDetails: {}, crops: [] };
 
 // parse name out of filenames with format parse_{name}_{count}.{ext}
 function getParseName(file: string) {
@@ -39,6 +47,22 @@ function getParseName(file: string) {
   const idx = matches ? Number(matches[2]) : 0;
   const ext = matches ? matches[4] : "";
   return { name, idx, ext };
+}
+
+// checks string for , X.X fps, and returns X.X
+function parseFps(file: string) {
+  const pattern = ", (\\d+.\\d*) fps,"; // beware autoformat destroys this line replacing ' with " and then \ gets used as an escape
+  const matches = file.match(pattern);
+  const fpsStr = matches?.[1] ?? undefined;
+  return Number(fpsStr);
+}
+
+function getCurrFps() {
+  return globalFps;
+}
+
+function getRunDetails() {
+  return currRun;
 }
 
 // TODO improve these types
@@ -141,6 +165,19 @@ export function generateFFmpegCommand(
   return singleSpace(cmd);
 }
 
+// const installLogger = (ffmpeg: FFmpeg, cb: LogCallback) => {
+//   ffmpeg?.setLogger(cb);
+// };
+
+const log_getFps = ({ type, message }: { type: string; message: string }) => {
+  // only listen until we get a valid fps
+  if ((type === "fferr" && globalFps === -1) || !globalFps) {
+    // Listen for FPS and store it
+    const _fps = parseFps(message);
+    globalFps = _fps ?? -1;
+  }
+};
+
 // TODO this probably results in duplicate instances of ffmpeg currently if multipole components call the useHook
 export default function useFFmpeg() {
   const ffmpeg = useMemo(() => createFFmpeg(ffmpeg_init), []);
@@ -151,6 +188,8 @@ export default function useFFmpeg() {
     if (ffmpeg && !ffmpeg.isLoaded()) {
       console.log("ffmpeg loading...");
       await ffmpeg.load();
+
+      ffmpeg.setLogger(log_getFps);
 
       setFFmpegReady(ffmpeg.isLoaded());
     }
@@ -165,6 +204,10 @@ export default function useFFmpeg() {
     output: OutputMode,
     progressCb: ProgressCallback = emptyCb
   ) {
+    // update values that the user can introspect during a parse
+    globalFps = -1;
+    currRun = { crops, parseDetails: details };
+
     await load();
     console.time("parseVideo time:");
     // TODO WorkerFS might help here https://github.com/ffmpegwasm/ffmpeg.wasm/issues/147
@@ -199,6 +242,13 @@ export default function useFFmpeg() {
     console.timeEnd("parseVideo time:");
   }
 
-  return [ffmpeg, ffmpegReady, parseVideo, getParseName] as const;
+  return [
+    ffmpeg,
+    ffmpegReady,
+    parseVideo,
+    getParseName,
+    getCurrFps,
+    getRunDetails,
+  ] as const;
 }
 function emptyCb(progressParams: { ratio: number }): any {}

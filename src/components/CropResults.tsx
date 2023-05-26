@@ -15,6 +15,7 @@ import { ImgType, ImgTypes } from "@/hooks/useFFmpeg";
 type Props = {
   cropResults: CropResult[];
   loading: boolean;
+  progress?: number;
 };
 
 export type CropResult = {
@@ -134,10 +135,15 @@ const CropResults: NextComponentType<Record<string, never>, unknown, Props> = (
       {props.loading && (
         <>
           <ScrollOnShow />
-          <CircularProgress sx={{ color: "var(--track-color-right)" }} />
+          <CircularProgress
+            variant={
+              (props.progress ?? 0) > 0 ? "determinate" : "indeterminate"
+            }
+            value={props.progress}
+            sx={{ color: "var(--track-color-right)" }}
+          />
         </>
       )}
-
       <div className={styles.cropResults}>{crop_results_grouped}</div>
     </>
   );

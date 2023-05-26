@@ -20,6 +20,9 @@ import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
 
 type Props = {};
 
+const clamp = (num: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, num));
+
 function freeUrls(results: CropResult[]) {
   results.map((result) => URL.revokeObjectURL(result.url));
 }
@@ -50,10 +53,34 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [parseProgress, setParseProgress] = useState<number>(100);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ffmpeg, ffmpegReady, parseVideo, getParseName] = useFFmpeg();
+  const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
+    useFFmpeg();
 
-  function ffmpegProgressCb(progress: { ratio: number }) {
-    setParseProgress(progress.ratio * 100);
+  function ffmpegProgressCb(progress: { ratio: number; time?: number }) {
+    // setParseProgress(progress.ratio * 100);
+    const details = getRunDetails();
+    const limit = details.parseDetails.limit;
+    const prog_time = progress.time ?? 0;
+
+    let percent = 0;
+    if (details.parseDetails.limitMode === "frames") {
+      const fps = getFps();
+      const total_s = videoRef.current?.duration ?? 0;
+      const total_frames = fps * total_s;
+      const prog = Math.min(100, total_frames * progress.ratio);
+
+      percent = prog;
+    } else if (details.parseDetails.limitMode === "time" && limit) {
+      percent = (prog_time / limit) * 100;
+    } else {
+      const range = stopTime - startTime;
+      percent = (prog_time / range) * 100;
+      // percent = progress.ratio * 100;
+    }
+    if (percent) {
+      percent = clamp(Math.floor(percent), 0, 100);
+      setParseProgress(percent);
+    }
   }
 
   const storeCropsNoInfer = async (files: string[], ffmpeg: FFmpeg) => {
@@ -169,6 +196,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     };
     const file = videoRef.current?.src ?? "";
     setCropResults([]);
+    setParseProgress(0);
     setLoading(true);
     parseVideo(
       file,
@@ -210,7 +238,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       </Card>
       {(cropResults.length > 0 || loading) && (
         <Card>
-          <CropResults cropResults={cropResults} loading={loading} />
+          <CropResults
+            cropResults={cropResults}
+            loading={loading}
+            progress={parseProgress}
+          />
         </Card>
       )}
     </div>
