@@ -36,13 +36,16 @@
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.43.9",
     "typescript": "5.0.4",
-    "use-resize-observer": "^9.1.0"
+    "use-device-pixel-ratio": "^1.1.2",
+    "use-resize-observer": "^9.1.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/async": "^3.2.20",
     "@types/file-saver": "^2.0.5",
     "@types/lodash.throttle": "^4.1.7",
     "@types/mime": "^3.0.1",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.59.7"
   }
 }
