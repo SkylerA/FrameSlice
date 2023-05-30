@@ -7,6 +7,8 @@ type Props = {
   crop: Crop;
   editCb?: (crop: Crop) => void;
   deleteCb?: (crop: Crop) => void;
+  videoW: number;
+  videoH: number;
 };
 
 const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
@@ -16,8 +18,13 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
     event: React.ChangeEvent<HTMLInputElement>,
     cropField: string
   ): void {
+    // This generically stores the updated value under cropField
+    // This also replaces values of -1 with the max of the field which is set to x/y - videoW/videoH so that -1 will always return the max crop width within the video dimensions
+    const max = event.currentTarget.max;
     const editObj = {
-      [cropField]: event.currentTarget.value.replace(/[^a-zA-Z0-9-_]/g, "_"),
+      [cropField]: event.currentTarget.value.replace("-1", max),
+      // sma i have no clue why i was regexing this field to remove inval chars when this is a number field.... perhaps i was using a generic string for awhile?
+      // [cropField]: event.currentTarget.value.replace(/[^a-zA-Z0-9-_]/g, "_"),
     };
     props.editCb?.({ ...props.crop, ...editObj });
   }
@@ -48,6 +55,8 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
       <td>
         <input
           type="number"
+          min={-1}
+          max={props.videoW - Number(props.crop.x)}
           value={props.crop.width}
           onChange={(e) => handleNumberEdit(e, "width")}
         />
@@ -55,6 +64,8 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
       <td>
         <input
           type="number"
+          min={-1}
+          max={props.videoH - Number(props.crop.y)}
           value={props.crop.height}
           onChange={(e) => handleNumberEdit(e, "height")}
         />

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { NextComponentType } from "next";
 import useFFmpeg, {
   Crop,
@@ -36,6 +36,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [loading, setLoading] = useState<boolean>(false);
   const [model, setModel] = useState<GraphModel | null>(null);
   const [parseProgress, setParseProgress] = useState<number>(0);
+  const [vidW, setVidW] = useState<number>(0);
+  const [vidH, setVidH] = useState<number>(0);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
 
@@ -182,6 +184,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     );
   }
 
+  function handleVidSizeChange(width: number, height: number): void {
+    setVidW(width);
+    setVidH(height);
+  }
+
   return (
     <div className={styles.VidCropper}>
       <VideoControl
@@ -195,6 +202,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         setStartTime={setStartTime}
         stopTime={stopTime}
         setStopTime={setStopTime}
+        vidDimensionsCb={handleVidSizeChange}
       />
 
       <Card>
@@ -204,6 +212,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           cropData={cropData}
           selecting={selecting}
           setSelecting={setSelectingCb}
+          videoW={vidW}
+          videoH={vidH}
         />
       </Card>
 

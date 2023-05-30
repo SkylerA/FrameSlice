@@ -1,4 +1,4 @@
-import React, { RefObject, useMemo, useState } from "react";
+import React, { RefObject, useEffect, useMemo } from "react";
 import DropZone from "./DropZone";
 import SelectionContainer, { Box } from "./SelectionContainer";
 import { Crop } from "@/hooks/useFFmpeg";
@@ -17,6 +17,7 @@ type Props = {
   crops: Crop[];
   setCrops(crops: Crop[]): void;
   vidRef: RefObject<HTMLVideoElement>;
+  vidDimensionsCb?: (width: number, height: number) => void;
 };
 
 const vidScale = 60; // The underlying component's value rounding can cause some resolution issues so this scale provides better granularity
@@ -33,7 +34,20 @@ const VideoControl = (props: Props) => {
       w_ratio: width / (vidRef.current?.videoWidth ?? width),
       h_ratio: height / (vidRef.current?.videoHeight ?? height),
     };
-  }, [width, vidRef.current?.videoWidth, height, vidRef.current?.videoHeight]);
+  }, [
+    width,
+    vidRef,
+    vidRef.current?.videoWidth,
+    height,
+    vidRef.current?.videoHeight,
+  ]);
+
+  useEffect(() => {
+    props.vidDimensionsCb?.(
+      vidRef.current?.videoWidth ?? 0,
+      vidRef.current?.videoHeight ?? 0
+    );
+  }, [vidRef.current?.videoWidth, vidRef.current?.videoHeight]);
 
   // Determine max value for time range
   const vidLength = vidRef.current?.duration ?? 0;

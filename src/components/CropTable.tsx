@@ -7,6 +7,8 @@ import { useCallback } from "react";
 type Props = {
   crops: Crop[];
   editCb?: (crops: Crop[]) => void;
+  videoW: number;
+  videoH: number;
 };
 
 const CropTable: NextComponentType<Record<string, never>, unknown, Props> = (
@@ -46,6 +48,8 @@ const CropTable: NextComponentType<Record<string, never>, unknown, Props> = (
                 key={idx}
                 deleteCb={deleteCb}
                 editCb={(crop) => handleEdit(crop, idx)}
+                videoW={props.videoW}
+                videoH={props.videoH}
               />
             ))}
           </tbody>

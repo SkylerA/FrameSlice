@@ -4,7 +4,8 @@
     justify-content: center;
 }
 
-.cropResults img {
+.cropResults img,
+.cropResults video {
     max-width: 100%
 }
 

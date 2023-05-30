@@ -12,6 +12,8 @@ type Props = {
   cropData: Crop[];
   selecting: boolean;
   setSelecting: (selecting: boolean) => void;
+  videoW: number;
+  videoH: number;
 };
 
 const CropControls = (props: Props) => {
@@ -36,7 +38,12 @@ const CropControls = (props: Props) => {
         <span>or</span>
         <CropFileLoader parseJsonCb={props.parseFramesFileJson} />
       </span>
-      <CropTable crops={props.cropData} editCb={props.editCropsCb} />
+      <CropTable
+        crops={props.cropData}
+        editCb={props.editCropsCb}
+        videoW={props.videoW}
+        videoH={props.videoH}
+      />
     </div>
   );
 };
