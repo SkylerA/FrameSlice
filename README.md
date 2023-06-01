@@ -1,3 +1,13 @@
+# Preparing a model
+- Currently using /code/FramesServer/ml_models/gg_classify_mobilenet_v3
+- (converter requires python env so load FrameServer's venv in need be)
+- cd code/FramesServer/ml_models
+- convert to graph model with the following:
+  ```
+  tensorflowjs_converter --input_format=tf_saved_model ./gg_classify_mobilenet_v3 ./tfjs_graph_model
+  ```
+- place output in public
+- copy/use labels.json from gg_classify_mobilenet_v3 folder
 # About
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
