@@ -1,4 +1,4 @@
-import JSZip from "jszip";
+import type JSZip from "jszip";
 
 // Fetch a file from a url, convert it to a blob and add it to a zip
 export const fetchAndZipImg = (url: string, zip: JSZip, path: string) => {

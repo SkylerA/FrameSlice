@@ -3,9 +3,8 @@ import Tooltip from "@mui/material/Tooltip";
 import DownloadIcon from "@mui/icons-material/Download";
 import { NextComponentType } from "next";
 import ScrollOnShow from "./ScrollOnShow";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { fetchAndZipImg } from "@/utils/files";
+import { fetchAndZipImg } from "@/utils/zip";
 import styles from "@/styles/CropResults.module.css";
 import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
@@ -26,8 +25,9 @@ export type CropResult = {
   classIdx?: number;
 };
 
-function downloadCrops(results: CropResult[]): void {
+async function downloadCrops(results: CropResult[]) {
   // Create a zip of all crops in their respective label folders
+  const JSZip = (await import("jszip")).default;
   const zip = new JSZip();
 
   // async add images to zip
