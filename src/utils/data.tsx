@@ -16,3 +16,16 @@ export function createAutoArrayMap<T>(): AutoArrayMap<T> {
 
 export const clamp = (num: number, min: number, max: number) =>
   Math.max(min, Math.min(max, num));
+
+// groupBy provide by https://stackoverflow.com/a/62765924/81008
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const groupBy = <T, K extends keyof any>(
+  list: T[],
+  getKey: (item: T) => K
+) =>
+  list.reduce((previous, currentItem) => {
+    const group = getKey(currentItem);
+    if (!previous[group]) previous[group] = [];
+    previous[group].push(currentItem);
+    return previous;
+  }, {} as Record<K, T[]>);

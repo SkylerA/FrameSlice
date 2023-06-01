@@ -58,7 +58,7 @@ function parseFps(file: string) {
   return Number(fpsStr);
 }
 
-function getCurrFps() {
+function getFps() {
   return globalFps;
 }
 
@@ -79,7 +79,7 @@ export function handleFFmpegProgress(
   const startTime = details.parseDetails.startTime ?? 0;
   let percent = 0;
   if (details.parseDetails.limitMode === "frames") {
-    const fps = getCurrFps();
+    const fps = getFps();
     const total_s = videoRef.current?.duration ?? 0;
     const total_frames = fps * total_s;
     const prog = Math.min(100, total_frames * progress.ratio);
@@ -287,7 +287,7 @@ export default function useFFmpeg() {
     ffmpegReady,
     parseVideo,
     getParseName,
-    getCurrFps,
+    getFps,
     getRunDetails,
   ] as const;
 }
