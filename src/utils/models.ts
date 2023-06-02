@@ -1,33 +1,43 @@
-import { GraphModel } from "@tensorflow/tfjs-converter";
-import { IOHandler } from "@tensorflow/tfjs-core/dist/io/types";
-// TODO see about delaying the load of this. Tried to dynamic import, but the can't seem to access types like tf.rank
-import * as tf from "@tensorflow/tfjs";
-// TODO Ensure we don't need this import any more, tf.getBackend() returns webgl even when it's commented out
-// import "@tensorflow/tfjs-backend-webgl";
+import type { Tensor, Rank } from "@tensorflow/tfjs";
+import type { GraphModel } from "@tensorflow/tfjs-converter";
 
-export const loadModel = async (
-  cb: (graph: GraphModel<string | IOHandler>) => void
-) => {
-  const { loadGraphModel } = await import("@tensorflow/tfjs-converter");
-  const graphModel = await loadGraphModel("./tfjs_model/model.json");
-  cb(graphModel);
-  return graphModel;
+export const loadModel = async () => {
+  // This function has multiple changes to defer loading of the model to after the paint but before an infer is called
+  //
+  if (typeof window !== "undefined") {
+    // TODO add json check for 'format' === 'graph-model'
+    console.time("Imported tfjs-backend-webgl");
+    // Backend seems to get auto imported on a regular import, but with this method, you see "Error: No backend found in registry" if you don't explicitly import here
+    await import("@tensorflow/tfjs-backend-webgl");
+    console.timeEnd("Imported tfjs-backend-webgl");
+    const { loadGraphModel } = await import("@tensorflow/tfjs-converter");
+    const json = await import("@/model_files/labels.json");
+    const graphModel = await loadGraphModel("./tfjs_graph_model/model.json");
+    return { graphModel, labels: json.labels };
+  } else {
+    return { graphModel: undefined, labels: [] };
+  }
 };
 
-export const inferImage = async (url: string, graphModel: tf.GraphModel) => {
-  return new Promise<number>((resolve) => {
+export const inferImage = async (url: string, graphModel: GraphModel) => {
+  return new Promise<number | undefined>((resolve) => {
     const image = new Image();
     image.src = url;
     // run inference once image loads
-    image.onload = () => {
+    image.onload = async () => {
       // this is hardcoded for gg btns currently
       const img_size = 34;
-      const tensor = tf.browser
-        .fromPixels(image)
-        .resizeNearestNeighbor([img_size, img_size])
-        .toFloat()
-        .expandDims();
-      const results = graphModel?.predict(tensor) as tf.Tensor<tf.Rank>;
+      // TODO see about starting loading this before first call
+      const tensor = await import("@tensorflow/tfjs").then((tf) => {
+        // tf.getBackend();
+        return tf.browser
+          .fromPixels(image)
+          .resizeNearestNeighbor([img_size, img_size])
+          .toFloat()
+          .expandDims();
+      });
+
+      const results = graphModel?.predict(tensor) as Tensor<Rank> | undefined;
 
       const predictions = results?.arraySync();
       const classIdx = results?.as1D().argMax().dataSync()[0];

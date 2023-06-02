@@ -6,7 +6,6 @@ type Props = {
 };
 
 const Progress = (props: Props) => {
-  console.log(props.value);
   return (
     <CircularProgress
       variant={(props.value ?? 0) > 0 ? "determinate" : "indeterminate"}

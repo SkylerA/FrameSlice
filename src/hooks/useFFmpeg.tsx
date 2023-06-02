@@ -224,18 +224,23 @@ export default function useFFmpeg() {
   const [ffmpegReady, setFFmpegReady] = useState(false);
 
   const load = async () => {
-    console.time("ffmpeg loaded");
-    if (ffmpeg && !ffmpeg.isLoaded()) {
+    if (ffmpeg && !ffmpeg.isLoaded() && typeof window != "undefined") {
+      // TODO console shows warnings about this console time not existing, might be an indicator this is firing on the server as well which we don't really need. Or this might be related to strict mode double draws altho it's somehow related to the deferred loading i think.
+      console.time("ffmpeg loaded");
       console.log("ffmpeg loading...");
       await ffmpeg.load();
 
       ffmpeg.setLogger(log_getFps);
 
       setFFmpegReady(ffmpeg.isLoaded());
+      console.timeEnd("ffmpeg loaded");
     }
-    console.timeEnd("ffmpeg loaded");
   };
 
+  if (!ffmpegReady && typeof window != "undefined") {
+    // Start loading ffmpeg on the client side
+    load();
+  }
   async function parseVideo(
     file: string,
     crops: Crop[],
