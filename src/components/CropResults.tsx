@@ -1,7 +1,7 @@
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DownloadIcon from "@mui/icons-material/Download";
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import ScrollOnShow from "./ScrollOnShow";
 import { saveAs } from "file-saver";
 import { fetchAndZipImg } from "@/utils/zip";

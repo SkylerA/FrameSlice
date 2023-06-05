@@ -1,4 +1,4 @@
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import { ComponentProps } from "react";
 import styles from "@/styles/Card.module.css";
 import classnames from "classnames";

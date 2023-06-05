@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button";
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import { useRef } from "react";
 
 // TODO This is probably not screenreader friendly

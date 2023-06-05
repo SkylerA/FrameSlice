@@ -1,4 +1,4 @@
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import React, { useRef, useState } from "react";
 
 // TODO make selections resizable

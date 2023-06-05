@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { NextComponentType } from "next";
+import type { NextComponentType } from "next";
 import useFFmpeg, {
   Crop,
   freeUrls,
@@ -7,7 +7,7 @@ import useFFmpeg, {
 } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
-import { Json } from "./CropFileLoader";
+import type { Json } from "./CropFileLoader";
 import CropResults, { CropResult } from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";

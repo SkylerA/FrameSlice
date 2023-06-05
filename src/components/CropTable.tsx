@@ -1,5 +1,5 @@
-import { NextComponentType } from "next";
-import { Crop } from "@/hooks/useFFmpeg";
+import type { NextComponentType } from "next";
+import type { Crop } from "@/hooks/useFFmpeg";
 import CropRow from "./CropRow";
 import styles from "@/styles/CropTable.module.css";
 import { useCallback } from "react";
