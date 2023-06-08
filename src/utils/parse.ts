@@ -27,10 +27,12 @@ export function FramesParseObjToCrop(obj: FramesParseObj): Crop {
   };
 }
 
+// TODO this should eventually live elsewhere
+export const GG_BTN_PREFIX = "gg_btn_";
 export const Crops_GG_Strive_P1_Row1: FramesParseObj[] = [
   {
     UID: "a308c3b5-0122-46a7-88ba-093f305a4f02",
-    presetName: "gg_dir_L_0_0",
+    presetName: `${GG_BTN_PREFIX}L_0_0`,
     crop: {
       xOff: "49",
       yOff: "220",
@@ -40,7 +42,7 @@ export const Crops_GG_Strive_P1_Row1: FramesParseObj[] = [
   },
   {
     UID: "142ae62b-7537-49d2-b1ad-0ae41148981d",
-    presetName: "gg_dir_L_0_1",
+    presetName: `${GG_BTN_PREFIX}L_0_1`,
     crop: {
       xOff: "94",
       yOff: "220",
@@ -50,7 +52,7 @@ export const Crops_GG_Strive_P1_Row1: FramesParseObj[] = [
   },
   {
     UID: "da23ac18-d7db-454a-a5b6-a711e40026ce",
-    presetName: "gg_dir_L_0_2",
+    presetName: `${GG_BTN_PREFIX}L_0_2`,
     crop: {
       xOff: "139",
       yOff: "220",
@@ -60,7 +62,7 @@ export const Crops_GG_Strive_P1_Row1: FramesParseObj[] = [
   },
   {
     UID: "1f6d8c7c-cc71-4355-95ee-eb9c1a4a3421",
-    presetName: "gg_dir_L_0_3",
+    presetName: `${GG_BTN_PREFIX}L_0_3`,
     crop: {
       xOff: "184",
       yOff: "220",

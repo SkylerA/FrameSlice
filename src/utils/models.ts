@@ -1,6 +1,3 @@
-import type { Tensor, Rank } from "@tensorflow/tfjs";
-import type { GraphModel } from "@tensorflow/tfjs-converter";
-
 export const loadModel = async () => {
   // This function has multiple changes to defer loading of the model to after the paint but before an infer is called
   //
@@ -19,29 +16,39 @@ export const loadModel = async () => {
   }
 };
 
-export const inferImage = async (url: string, graphModel: GraphModel) => {
-  return new Promise<number | undefined>((resolve) => {
-    const image = new Image();
-    image.src = url;
-    // run inference once image loads
-    image.onload = async () => {
-      // this is hardcoded for gg btns currently
-      const img_size = 34;
-      // TODO see about starting loading this before first call
-      const tensor = await import("@tensorflow/tfjs").then((tf) => {
-        // tf.getBackend();
-        return tf.browser
-          .fromPixels(image)
-          .resizeNearestNeighbor([img_size, img_size])
-          .toFloat()
-          .expandDims();
-      });
+// export const inferImage = async (url: string, graphModel: GraphModel) => {
+//   return new Promise<number | undefined>(async (resolve) => {
+//     const tensor = await imageUrlToTensor(url, { w: 34, h: 34 });
+//     const classIdx = await inferTensor(tensor, graphModel);
+//     resolve(classIdx);
+//   });
+// };
 
-      const results = graphModel?.predict(tensor) as Tensor<Rank> | undefined;
+// export const inferTensor = async (tensor: Tensor, graphModel: GraphModel) => {
+//   return new Promise<number | undefined>((resolve) => {
+//     const results = graphModel?.predict(tensor) as Tensor<Rank> | undefined;
+//     const classIdx = results?.as1D().argMax().dataSync()[0];
+//     resolve(classIdx);
+//   });
+// };
 
-      const predictions = results?.arraySync();
-      const classIdx = results?.as1D().argMax().dataSync()[0];
-      resolve(classIdx);
-    };
-  });
-};
+// export const imageUrlToTensor = async (
+//   url: string,
+//   size: { w: number; h: number }
+// ) => {
+//   return new Promise<Tensor>((resolve) => {
+//     const image = new Image();
+//     image.src = url;
+//     image.onload = async () => {
+//       // TODO see about starting loading this before first call
+//       const tensor = await import("@tensorflow/tfjs").then((tf) => {
+//         return tf.browser
+//           .fromPixels(image)
+//           .resizeNearestNeighbor([size.h, size.w])
+//           .toFloat()
+//           .expandDims();
+//       });
+//       resolve(tensor);
+//     };
+//   });
+// };

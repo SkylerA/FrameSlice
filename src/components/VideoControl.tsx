@@ -18,6 +18,7 @@ type Props = {
   setCrops(crops: Crop[]): void;
   vidRef: RefObject<HTMLVideoElement>;
   vidDimensionsCb?: (width: number, height: number) => void;
+  hideRange?: boolean;
 };
 
 const vidScale = 60; // The underlying component's value rounding can cause some resolution issues so this scale provides better granularity
@@ -26,7 +27,7 @@ const secToStr = (val: number) =>
 const rangeValToSec = (val: number) => Math.round((val / vidScale) * 100) / 100;
 
 const VideoControl = (props: Props) => {
-  const { vidRef } = props;
+  const { vidRef, hideRange } = props;
   const { width = 1, height = 1 } = useThrottledResizeObserver(500, vidRef);
 
   const vidRatio = useMemo(() => {
@@ -110,10 +111,9 @@ const VideoControl = (props: Props) => {
               muted
             />
           </SelectionContainer>
-          {timeRangeMax > 0 && (
+          {timeRangeMax > 0 && !hideRange && (
             <div className={styles.RangeContainer}>
               <span>Clip Range</span>
-              {/* TODO Might be better to use https://zillow.github.io/react-slider/ or Mui probably has a double slider*/}
               <MultiRangeSlider
                 min={0}
                 max={timeRangeMax}
