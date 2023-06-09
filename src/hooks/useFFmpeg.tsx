@@ -232,6 +232,8 @@ export default function useFFmpeg() {
       !ffmpeg.isLoaded() &&
       typeof window != "undefined"
     ) {
+      // TODO this needs work. ffmpegLoading protects against memory issues at startup where ffmpeg tries to init itself too many times, but if you leave ffmpeg loading set to true then this fails in the gg.tsx when you try to load a video even though ffmpeg has already been loaded. I'm wondering if this is a thread or server side issue
+      // TODO see about using useIsClient to ensure this code is running client side only
       ffmpegLoading = true;
       console.time("ffmpeg loaded");
       console.log("ffmpeg loading...");
@@ -240,6 +242,7 @@ export default function useFFmpeg() {
       ffmpeg.setLogger(log_getFps);
 
       setFFmpegReady(ffmpeg.isLoaded());
+      ffmpegLoading = false;
       console.timeEnd("ffmpeg loaded");
     }
   };
