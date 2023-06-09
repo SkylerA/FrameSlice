@@ -219,13 +219,20 @@ const log_getFps = ({ type, message }: { type: string; message: string }) => {
 };
 
 // TODO this probably results in duplicate instances of ffmpeg currently if multipole components call the useHook
+
+let ffmpegLoading = false; // Keep useFFmpeg from trying to load itself multiple times at start
 export default function useFFmpeg() {
   const ffmpeg = useMemo(() => createFFmpeg(ffmpeg_init), []);
   const [ffmpegReady, setFFmpegReady] = useState(false);
 
   const load = async () => {
-    if (ffmpeg && !ffmpeg.isLoaded() && typeof window != "undefined") {
-      // TODO console shows warnings about this console time not existing, might be an indicator this is firing on the server as well which we don't really need. Or this might be related to strict mode double draws altho it's somehow related to the deferred loading i think.
+    if (
+      ffmpeg &&
+      !ffmpegLoading &&
+      !ffmpeg.isLoaded() &&
+      typeof window != "undefined"
+    ) {
+      ffmpegLoading = true;
       console.time("ffmpeg loaded");
       console.log("ffmpeg loading...");
       await ffmpeg.load();
