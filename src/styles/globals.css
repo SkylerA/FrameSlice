@@ -118,7 +118,7 @@ video {
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--track-color-left) #DFE9EB;
+  scrollbar-color: #555 #333;
 }
 
 /* Chrome, Edge and Safari */
