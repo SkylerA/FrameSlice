@@ -16,6 +16,11 @@ export const loadModel = async () => {
   }
 };
 
+export const loadLabels = async () => {
+  const json = await import("@/model_files/labels.json");
+  return json.labels;
+};
+
 // export const inferImage = async (url: string, graphModel: GraphModel) => {
 //   return new Promise<number | undefined>(async (resolve) => {
 //     const tensor = await imageUrlToTensor(url, { w: 34, h: 34 });

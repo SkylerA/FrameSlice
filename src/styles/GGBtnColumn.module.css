@@ -1,0 +1,84 @@
+.gg {
+    --saturation: 70%;
+    --lightness: 55%;
+    --held-lightness: calc(var(--lightness) - 30%);
+    --P-hue: 300;
+    --K-hue: 200;
+    --S-hue: 155;
+    --FD-hue: 155;
+    --HS-hue: 0;
+    --RC-hue: 0;
+    --D-hue: 31;
+    --Dir-hue: 31;
+}
+
+/* Base btn style, specific classes will override diff variables to change color etc */
+.gg .btn {
+    color: hsl(var(--hue), var(--saturation), var(--lightness));
+    text-align: center;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.gg .P_h,
+.gg .K_h,
+.gg .S_h,
+.gg .FD_h,
+.gg .HS_h,
+.gg .RC_h,
+.gg .D_h,
+.gg .Dir_h {
+    --lightness: var(--held-lightness);
+}
+
+.gg .RC,
+.gg .RC_h,
+.gg .FD,
+.gg .FD_h {
+    font-size: 75%;
+}
+
+.gg .Dash,
+.gg .Dash_h {
+    font-size: 50%;
+}
+
+.gg .P,
+.gg .P_h {
+    --hue: var(--P-hue);
+}
+
+.gg .K,
+.gg .K_h {
+    --hue: var(--K-hue);
+}
+
+.gg .S,
+.gg .S_h {
+    --hue: var(--S-hue);
+}
+
+.gg .FD,
+.gg .FD_h {
+    --hue: var(--FD-hue);
+}
+
+.gg .HS,
+.gg .HS_h {
+    --hue: var(--HS-hue);
+}
+
+.gg .RC,
+.gg .RC_h {
+    --hue: var(--RC-hue);
+}
+
+.gg .D,
+.gg .D_h {
+    --hue: var(--D-hue);
+}
+
+.gg .Dir,
+.gg .Dir_h {
+    --hue: var(--Dir-hue);
+}

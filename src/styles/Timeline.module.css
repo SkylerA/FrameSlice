@@ -1,0 +1,56 @@
+.Timeline {
+    --tick-color: #aaa;
+    --tick-height: .25rem;
+    --tick-height-lg: .5rem;
+    --tick-label-height: .85rem;
+    --timeline-color: var(--tick-color);
+    --timeline-height: 1rem;
+    --border-color: #FFF;
+    --bg-color: #000;
+
+    /* This gets updated in the component */
+    --frameW: 1rem;
+}
+
+.Timeline .Grid {
+    margin: 1rem 1rem;
+    background: var(--bg-color);
+    border-radius: .5rem;
+    outline: 1px solid var(--border-color);
+    max-width: fit-content;
+    padding-bottom: var(--scrollbar-size);
+}
+
+.Timeline .timeTick {
+    width: 1rem;
+    width: var(--frameW);
+    height: 1rem;
+    height: var(--timeline-height);
+    position: absolute;
+    bottom: 20px;
+    color: var(--timeline-color);
+}
+
+.Timeline .timeTick::before {
+    /* timeline line and ticks */
+    content: '';
+    position: absolute;
+    width: var(--frameW);
+    height: var(--tick-height);
+    transform: translatey(var(--tick-label-height));
+    background: linear-gradient(var(--tick-color), var(--tick-color)) no-repeat center/1px 100%;
+    border-top: 1px var(--tick-color) solid;
+}
+
+.Timeline .timeTick[data-count]::after {
+    /* timeline frame number */
+    --offset: calc(var(--tick-label-height) + var(--tick-height-lg));
+    content: attr(data-count);
+    position: absolute;
+    left: 0;
+    transform: translatey(var(--offset));
+    width: var(--frameW);
+    text-align: center;
+    line-height: var(--tick-label-height);
+    font-size: 70%
+}
