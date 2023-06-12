@@ -167,11 +167,13 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   const [cropResults, setCropResults] = useState<CropResult[]>([]);
   // const [newTimelineResults, setNewTimelineResults] = useState<ObjArray>([]);
   const [results, setResults] = useState<ObjArray[]>([[]]);
-  const [clipIdx, setClipIdx] = useState<number>(0);
   const [frameW, setFrameW] = useState<number>(0);
   const [inferReqCount, setInferReqCount] = useState<number>(0);
   const inferWorkerRef = useRef<Worker>();
-  const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
+  const [clipIdx, setClipIdx] = useState<number>(-1);
+  const [inferResults, setInferResults] = useState<inferResult[]>([]);
+  // const [clipIdx, setClipIdx] = useState<number>(0);
+  // const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
   const winSize = useWindowSize();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
@@ -371,43 +373,45 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
       />
 
       {results.map((result, idx) => (
-        <div key={idx}>
-          {(vidSrc || result.length > 0) && (
-            <div className={styles.Grid}>
-              {/*  */}
-              <GG_Timeline
-                containerW={winSize.width}
-                frameW={frameW}
-                frames={result}
-                showDupes={false}
-                clickCb={(idx) => seekToFrame(idx)}
-                hoverCb={(idx) => handleCellHover(idx)}
+        <div key={idx} className={styles.Grid}>
+          {result.length > 0 && (
+            <GG_Timeline
+              containerW={winSize.width}
+              frameW={frameW}
+              frames={result}
+              showDupes={false}
+              clickCb={(idx) => seekToFrame(idx)}
+              hoverCb={(idx) => handleCellHover(idx)}
+            />
+          )}
+          {/* Render infer progress for only the current clip being updated */}
+          {idx === clipIdx && inferProgress < 100 && (
+            <div>
+              <InferProgress
+                className={styles.progress}
+                percent={inferProgress}
+                bufferPercent={parseProgress}
+                ffmpegReady={ffmpegReady}
               />
-              {/* Render infer progress for only the current clip being updated */}
-              {idx === clipIdx && inferProgress < 100 && (
-                <InferProgress
-                  className={styles.progress}
-                  percent={inferProgress}
-                  bufferPercent={parseProgress}
-                  ffmpegReady={ffmpegReady}
-                />
-              )}
             </div>
           )}
         </div>
       ))}
 
-      {/* Rendering infer progress on its own while there are no results to display above */}
-      {clipIdx >= results.length && inferProgress < 100 && (
-        <div className={styles.Grid}>
-          <InferProgress
-            className={styles.progress}
-            percent={inferProgress}
-            bufferPercent={parseProgress}
-            ffmpegReady={ffmpegReady}
-          />
-        </div>
-      )}
+      {/* Rendering infer progress on its own while there are no results to display above
+      {console.log(clipIdx)}
+      {(clipIdx < 1 || clipIdx >= results.length) &&
+        vidSrc &&
+        inferProgress < 100 && (
+          <div className={styles.Grid}>
+            <InferProgress
+              className={styles.progress}
+              percent={inferProgress}
+              bufferPercent={parseProgress}
+              ffmpegReady={ffmpegReady}
+            />
+          </div>
+        )} */}
     </div>
   );
 };

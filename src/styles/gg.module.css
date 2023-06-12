@@ -21,6 +21,10 @@
     padding-bottom: var(--scrollbar-size);
 }
 
+.gg .Grid:empty {
+    outline: 0px solid transparent;
+}
+
 .gg .progress {
     margin: 0rem 1rem;
     /* padding-bottom: .5rem; */
