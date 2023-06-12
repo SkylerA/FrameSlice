@@ -154,7 +154,7 @@ const Timeline = (props: TimelineProps) => {
       className={styles.Timeline}
       columnCount={frames.length}
       columnWidth={frameW}
-      height={newTimelineHeight + (scrollbarVis ? 10 : 0)}
+      height={newTimelineHeight + (scrollbarVis ? 20 : 10)}
       rowCount={1}
       rowHeight={newTimelineHeight}
       width={maxTimelineW}
