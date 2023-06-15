@@ -170,10 +170,10 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   const [frameW, setFrameW] = useState<number>(0);
   const [inferReqCount, setInferReqCount] = useState<number>(0);
   const inferWorkerRef = useRef<Worker>();
-  const [clipIdx, setClipIdx] = useState<number>(-1);
-  const [inferResults, setInferResults] = useState<inferResult[]>([]);
-  // const [clipIdx, setClipIdx] = useState<number>(0);
-  // const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
+  // const [clipIdx, setClipIdx] = useState<number>(-1);
+  // const [inferResults, setInferResults] = useState<inferResult[]>([]);
+  const [clipIdx, setClipIdx] = useState<number>(0);
+  const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
   const winSize = useWindowSize();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
@@ -308,6 +308,7 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
           .split("_");
         // side and row aren't currently used
 
+        // Create a btns entry if one doesn't exist
         obj["btns"] = obj["btns"] ?? ([] as string[]);
         const btns = obj["btns"];
         const label = labels[curr.classIdx ?? -1];
