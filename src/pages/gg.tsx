@@ -23,6 +23,7 @@ import styles from "@/styles/gg.module.css";
 import InferProgress from "@/components/InferProgress";
 import { useWindowSize } from "usehooks-ts";
 import GG_Timeline from "@/components/GG_Timeline";
+import GamepadInput from "../components/GamepadInputs";
 
 type Props = {};
 
@@ -170,10 +171,10 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   const [frameW, setFrameW] = useState<number>(0);
   const [inferReqCount, setInferReqCount] = useState<number>(0);
   const inferWorkerRef = useRef<Worker>();
-  // const [clipIdx, setClipIdx] = useState<number>(-1);
-  // const [inferResults, setInferResults] = useState<inferResult[]>([]);
-  const [clipIdx, setClipIdx] = useState<number>(0);
-  const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
+  const [clipIdx, setClipIdx] = useState<number>(-1);
+  const [inferResults, setInferResults] = useState<inferResult[]>([]);
+  // const [clipIdx, setClipIdx] = useState<number>(0);
+  // const [inferResults, setInferResults] = useState<inferResult[]>([...demo]);
   const winSize = useWindowSize();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
@@ -398,6 +399,8 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
           )}
         </div>
       ))}
+
+      {inferProgress >= 100 && <GamepadInput />}
 
       {/* Rendering infer progress on its own while there are no results to display above
       {console.log(clipIdx)}

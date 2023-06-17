@@ -31,6 +31,8 @@
     --lightness: var(--held-lightness);
 }
 
+.gg .HS,
+.gg .HS_h,
 .gg .RC,
 .gg .RC_h,
 .gg .FD,

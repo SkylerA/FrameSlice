@@ -1,3 +1,6 @@
+// TODO Look into reducing size. // TODO https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer
+// TODO look into react million for virtual dom speed ups
+
 import "@/styles/globals.css";
 // TODO remove this once this project uses App folder style
 import "@/components/multiRangeSlider/multirangeSlider.css";
