@@ -2,8 +2,8 @@ import React, { CSSProperties, useMemo } from "react";
 import { FixedSizeGrid } from "react-window";
 import { useDevicePixelRatio } from "use-device-pixel-ratio";
 import styles from "@/styles/Timeline.module.css";
+import { ObjArray } from "@/utils/data";
 
-export type ObjArray = { [key: string]: any }[];
 export type BtnColProps = {
   colIdx: number;
   frames: ObjArray;
@@ -39,6 +39,7 @@ export type TimelineProps = {
   clickCb?: (frameIdx: number) => void;
   hoverCb?: (frameIdx: number) => void;
   showDupes?: boolean;
+  gridRef?: React.LegacyRef<FixedSizeGrid<any>>;
 };
 
 function getMaxBtnRows(array: ObjArray) {
@@ -78,6 +79,7 @@ const Timeline = (props: TimelineProps) => {
     cellCb,
     btnColumnCb,
     showDupes,
+    gridRef,
   } = props;
   const pixelRatio = useDevicePixelRatio({ maxDpr: +Infinity, round: false });
   const remToPixels = 16;
@@ -114,6 +116,10 @@ const Timeline = (props: TimelineProps) => {
     rowIndex,
     style,
   }) => {
+    // Provide a tick label for all values below 100 and every 5th after that
+    const tickLbl =
+      columnIndex < 100 || !(columnIndex % 5) ? columnIndex : undefined;
+
     return (
       <div
         onClick={() => clickCb?.(columnIndex)}
@@ -138,7 +144,7 @@ const Timeline = (props: TimelineProps) => {
         <div
           style={{ ["--frameW" as any]: `${frameW}px` }}
           className={styles.timeTick}
-          data-count={columnIndex + 1}
+          data-count={tickLbl}
         ></div>
       </div>
     );
@@ -147,7 +153,9 @@ const Timeline = (props: TimelineProps) => {
   return (
     // TODO See about replacing with Single List from same module
     <FixedSizeGrid
+      ref={gridRef}
       style={{
+        // minWidth: "90vw",
         maxWidth: frames.length * frameW,
         overflowY: "hidden",
       }}

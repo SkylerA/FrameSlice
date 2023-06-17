@@ -1,3 +1,5 @@
+export type ObjArray = { [key: string]: any }[];
+
 // This creates a map of arrays that will auto generate the array the first time a bucket is accessed
 type AutoArrayMap<T> = { [key: string]: T[] };
 export function createAutoArrayMap<T>(): AutoArrayMap<T> {

@@ -89,6 +89,7 @@ async function loadModel() {
     console.timeEnd("Imported tfjs-backend-webgl");
     const { loadGraphModel } = await import("@tensorflow/tfjs-converter");
     const json = await import("@/model_files/labels.json");
+    // TODO add try/catch or .then().catch() and error message if model isn't found
     const graphModel = await loadGraphModel("/tfjs_graph_model/model.json");
     return { graphModel, labels: json.labels };
   } else {

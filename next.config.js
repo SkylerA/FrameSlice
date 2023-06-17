@@ -1,3 +1,5 @@
+const redirects = require("./redirect");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -17,6 +19,10 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  async redirects() {
+    const environment = process.env.MODE || "prod";
+    return redirects[environment] || [];
   },
 };
 
