@@ -1,8 +1,5 @@
 import React, { useState } from "react";
 import Button from "@mui/material/Button";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup/";
@@ -12,11 +9,11 @@ import { FrameRateMode, LimitMode, OutputMode } from "@/hooks/useFFmpeg";
 
 import styles from "@/styles/FrameControls.module.css";
 import {
-  labelStyle,
   selectStyle,
   textFieldStyle,
   toggleStyle,
 } from "@/styles/MuiStyleObjs";
+import Dropdown from "./Dropdown";
 
 export type FrameControlValues = {
   limit: number;
@@ -139,21 +136,13 @@ const FrameControls: NextComponentType<
             />
           )}
         </span>
-        <span className={styles.label}>Output</span>
-        <Select
-          labelId="fileOutType"
-          id="select"
+        <Dropdown
+          label="Output"
           value={output}
-          onChange={(e) => setOutput(e.target.value as OutputMode)}
-          sx={selectStyle}
-          size="small"
-        >
-          <MenuItem value="png">png</MenuItem>
-          <MenuItem value="jpg">jpg</MenuItem>
-          <MenuItem value="bmp">bmp</MenuItem>
-          <MenuItem value="gif">gif</MenuItem>
-          <MenuItem value="video">video</MenuItem>
-        </Select>
+          // TODO find a way to infer this array from the OutputMode type
+          entries={["png", "jpg", "bmp", "gif", "video"]}
+          onChangeCb={(val) => setOutput(val as OutputMode)}
+        />
       </div>
       <Tooltip
         arrow
