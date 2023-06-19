@@ -1,10 +1,12 @@
-import Tooltip from "@mui/material/Tooltip";
 import React from "react";
+import Tooltip from "@mui/material/Tooltip";
+import Button from "@mui/material/Button";
+import { saveAs } from "file-saver";
+
 import CropFileLoader, { JsonCallback } from "./CropFileLoader";
 import CropTable from "./CropTable";
-
-import styles from "@/styles/CropControls.module.css";
 import { Crop } from "@/hooks/useFFmpeg";
+import styles from "@/styles/CropControls.module.css";
 
 type Props = {
   parseFramesFileJson: JsonCallback | undefined;
@@ -15,6 +17,12 @@ type Props = {
   videoW: number;
   videoH: number;
 };
+
+function saveJson(obj: object, filename: string): void {
+  const jsonStr = JSON.stringify(obj);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  saveAs(blob, filename);
+}
 
 const CropControls = (props: Props) => {
   return (
@@ -44,6 +52,19 @@ const CropControls = (props: Props) => {
         videoW={props.videoW}
         videoH={props.videoH}
       />
+      {props.cropData?.length > 0 && (
+        <div>
+          <Button
+            sx={{ textTransform: "none" }}
+            className="gradient-bg"
+            variant="contained"
+            size="small"
+            onClick={() => saveJson(props.cropData, "crops.json")}
+          >
+            Save Crop File
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

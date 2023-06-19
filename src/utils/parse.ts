@@ -1,29 +1,34 @@
 import { Crop } from "@/hooks/useFFmpeg";
 
 export type FramesCrop = {
-  cropH: string;
-  cropW: string;
-  xOff: string;
-  yOff: string;
+  cropH?: string;
+  cropW?: string;
+  xOff?: string;
+  yOff?: string;
 };
 
 export type FramesParseObj = {
-  crop: FramesCrop;
+  crop?: FramesCrop;
   filterName?: string;
   presetName?: string;
   UID?: string;
   procParams?: { parseProcName: string; proc_kwargs: unknown };
+  name?: string;
+  x?: string;
+  y?: string;
+  width?: string;
+  height?: string;
 };
 
 export function FramesParseObjToCrop(obj: FramesParseObj): Crop {
-  const { crop, filterName, presetName, UID } = obj;
-  const name = filterName ?? presetName ?? UID ?? "";
+  const { crop, filterName, presetName, UID, name, x, y, width, height } = obj;
+  const tempName = filterName ?? presetName ?? name ?? UID ?? "";
   return {
-    x: crop.xOff,
-    y: crop.yOff,
-    width: crop.cropW,
-    height: crop.cropH,
-    name,
+    x: crop?.xOff ?? x ?? "-1",
+    y: crop?.yOff ?? y ?? "-1",
+    width: crop?.cropW ?? width ?? "-1",
+    height: crop?.cropH ?? height ?? "-1",
+    name: tempName,
   };
 }
 
@@ -70,4 +75,79 @@ export const Crops_GG_Strive_P1_Row1: FramesParseObj[] = [
       cropH: "34",
     },
   },
+];
+
+export const Crops_GG_Strive_P2_Row1: FramesParseObj[] = [
+  {
+    presetName: `${GG_BTN_PREFIX}R_0_0`,
+    crop: {
+      xOff: "1879",
+      yOff: "219",
+      cropW: "34",
+      cropH: "34",
+    },
+  },
+  {
+    presetName: `${GG_BTN_PREFIX}R_0_1`,
+    crop: {
+      xOff: "1835",
+      yOff: "219",
+      cropW: "34",
+      cropH: "34",
+    },
+  },
+  {
+    presetName: `${GG_BTN_PREFIX}R_0_2`,
+    crop: {
+      xOff: "1789",
+      yOff: "219",
+      cropW: "34",
+      cropH: "34",
+    },
+  },
+  {
+    presetName: `${GG_BTN_PREFIX}R_0_3`,
+    crop: {
+      xOff: "1744",
+      yOff: "219",
+      cropW: "34",
+      cropH: "34",
+    },
+  },
+  // {
+  //   presetName: `${GG_BTN_PREFIX}R_0_4`,
+  //   crop: {
+  //     xOff: "1699",
+  //     yOff: "219",
+  //     cropW: "34",
+  //     cropH: "34",
+  //   },
+  // },
+  // {
+  //   presetName: `${GG_BTN_PREFIX}R_0_5`,
+  //   crop: {
+  //     xOff: "1654",
+  //     yOff: "219",
+  //     cropW: "34",
+  //     cropH: "34",
+  //   },
+  // },
+  // {
+  //   presetName: `${GG_BTN_PREFIX}R_0_6`,
+  //   crop: {
+  //     xOff: "1609",
+  //     yOff: "219",
+  //     cropW: "34",
+  //     cropH: "34",
+  //   },
+  // },
+  // {
+  //   presetName: "gg-st_clock",
+  //   crop: {
+  //     xOff: "917",
+  //     yOff: "116",
+  //     cropW: "82",
+  //     cropH: "59",
+  //   },
+  // },
 ];

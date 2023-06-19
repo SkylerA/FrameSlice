@@ -7,6 +7,7 @@ import type { NextComponentType } from "next";
 import VideoControl from "@/components/VideoControl";
 import {
   Crops_GG_Strive_P1_Row1,
+  Crops_GG_Strive_P2_Row1,
   FramesParseObjToCrop,
   GG_BTN_PREFIX,
 } from "@/utils/parse";
