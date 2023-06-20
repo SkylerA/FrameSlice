@@ -4,6 +4,7 @@ import styles from "@/styles/Layout.module.css";
 import Link from "@mui/material/Link";
 
 import { Manrope } from "next/font/google";
+import { ParseSettingsContextProvider } from "./contexts/parseSettingsContext";
 //   Inter, Montserrat, Raleway, Quicksand, Manrope, Roboto, Lato, PT_Sans, Open_Sans
 const font = Manrope({ subsets: ["latin"] });
 
@@ -40,7 +41,9 @@ const Layout = (props: Props) => {
         </span>
       </header>
       <main className={`${styles.main} ${font.className}`}>
-        <div>{props.children}</div>
+        <ParseSettingsContextProvider>
+          <div>{props.children}</div>
+        </ParseSettingsContextProvider>
       </main>
     </>
   );
