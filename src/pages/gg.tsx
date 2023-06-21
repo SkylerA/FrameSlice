@@ -1,18 +1,24 @@
 // TODO model is currently copy pasted in, need a more permanent way of updating/storing/accessing etc
 // model location: /code/FramesServer/ml_models/gg_classify_mobilenet_v3/tfjs_model
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { NextComponentType } from "next";
 
 import VideoControl from "@/components/VideoControl";
-import {
-  Crops_GG_Strive_P1_Row1,
-  Crops_GG_Strive_P2_Row1,
-  FramesParseObjToCrop,
-  GG_BTN_PREFIX,
-} from "@/utils/parse";
+import { GetCrops, GetBtnPrefix } from "@/utils/parse";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import useFFmpeg, { freeUrls, handleFFmpegProgress } from "@/hooks/useFFmpeg";
+import useFFmpeg, {
+  Crop,
+  freeUrls,
+  handleFFmpegProgress,
+} from "@/hooks/useFFmpeg";
 import { loadLabels, loadModel } from "@/utils/models";
 import type { CropResult } from "@/components/CropResults";
 import mime from "mime";
@@ -25,14 +31,15 @@ import InferProgress from "@/components/InferProgress";
 import { useWindowSize } from "usehooks-ts";
 import GG_Timeline from "@/components/GG_Timeline";
 import GamepadInput from "../components/GamepadInputs";
+import ParseSettings from "@/components/ParseSettings";
+import Card from "@/components/Card";
+import { ParseSettingsContext } from "@/components/contexts/parseSettingsContext";
 
 type Props = {};
 
 type ObjArray = { [key: string]: any }[];
 
-const crops = Crops_GG_Strive_P1_Row1.map((filter) =>
-  FramesParseObjToCrop(filter)
-);
+let crops: Crop[] = [];
 
 const convertLabel = (label: string) => {
   // dummy values for 0 and 5 because they are never used in read fgc inputs
@@ -181,6 +188,8 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
     useFFmpeg();
 
+  const { parseSettings, setParseSettings } = useContext(ParseSettingsContext);
+
   // Cause the model to start async loading
   const loadModelPromise = useMemo(() => loadModel(), []);
 
@@ -209,6 +218,10 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   };
 
   useEffect(() => {
+    crops = GetCrops(parseSettings) ?? [];
+  }, [parseSettings]);
+
+  useEffect(() => {
     if (vidSrc !== "") {
       if (!inferWorkerRef.current) setupInferWorker();
       handleVid(vidSrc);
@@ -224,9 +237,14 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   useEffect(() => {
     (async () => {
       if (inferResults.length > 0) {
+        const prefix = GetBtnPrefix(parseSettings) ?? "";
+        // TODO improve error handling across the board
+        if (prefix === "")
+          console.log("Error: no btnPrefix available for", parseSettings);
         const lbls = labels.length > 0 ? labels : await loadLabels();
+
         // New timeline
-        const temp = CropResultsToInputTimeline(inferResults, lbls);
+        const temp = CropResultsToInputTimeline(inferResults, lbls, prefix);
         // setNewTimelineResults(temp);
         // TODO need to consider if shallow copy will causes issues here
         setResults((prev) => {
@@ -293,8 +311,11 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
 
   const CropResultsToInputTimeline = (
     results: inferResult[],
-    labels: string[]
+    labels: string[],
+    btnPrefix: string
   ) => {
+    if (!btnPrefix || btnPrefix === "")
+      console.log("CropResultsToInputTimeline Error: no btnPrefix provided");
     // TODO add error/warning if labels is empty as it will result in undefined btn arrays
     return results.reduce((grouped, curr) => {
       // Add an empty object to the entry if one doesn't exist
@@ -304,10 +325,8 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
 
       // Currently only parsing for gg buttons
       // This assumes a name format of ${GG_BTN_PREFIX}${side}_${row}_${col}
-      if (curr.name?.startsWith(GG_BTN_PREFIX)) {
-        const [side, row, col] = curr.name
-          .replace(GG_BTN_PREFIX, "")
-          .split("_");
+      if (curr.name?.startsWith(btnPrefix)) {
+        const [side, row, col] = curr.name.replace(btnPrefix, "").split("_");
         // side and row aren't currently used
 
         // Create a btns entry if one doesn't exist
@@ -330,16 +349,28 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   };
 
   // TODO useCallback
-  const handleVid = (vid: string) => {
-    if (vidSrc) {
-      const file = videoRef.current?.src ?? "";
-      // setCropResults([]);
-      setClipIdx((prev) => prev + 1);
-      setInferReqCount(0);
-      setInferResults([]);
-      parseVideo(vid, crops, {}, inferCrops, "png", ffmpegProgressCb);
-    }
-  };
+  const handleVid = useCallback(
+    (vid: string) => {
+      if (vidSrc) {
+        const file = videoRef.current?.src ?? "";
+        // setCropResults([]);
+        setClipIdx((prev) => prev + 1);
+        setInferReqCount(0);
+        setInferResults([]);
+        parseVideo(vid, crops, {}, inferCrops, "png", ffmpegProgressCb);
+      }
+    },
+    [
+      vidSrc,
+      videoRef,
+      setClipIdx,
+      setInferReqCount,
+      setInferResults,
+      parseVideo,
+      inferCrops,
+      ffmpegProgressCb,
+    ]
+  );
 
   function seekToFrame(idx: number) {
     const magicNumber = 1;
@@ -374,6 +405,10 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
         setStopTime={setStopTime}
         hideRange
       />
+
+      <Card>
+        <ParseSettings />
+      </Card>
 
       {results.map((result, idx) => (
         <div key={idx} className={styles.Grid}>

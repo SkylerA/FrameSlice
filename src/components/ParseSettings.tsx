@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import Dropdown from "./Dropdown";
 
 import styles from "@/styles/ParseSettings.module.css";
@@ -13,6 +13,10 @@ const ParseSettings = (props: Props) => {
   const { parseSettings, setParseSettings } = useContext(ParseSettingsContext);
   const game = parseSettings.game !== "" ? parseSettings.game : games[0];
   const side = parseSettings.side !== "" ? parseSettings.side : sides[0];
+
+  useEffect(() => {
+    setParseSettings((prev) => ({ ...prev, game, side }));
+  }, []); // one time init
 
   return (
     <div className={styles.settingsPane}>

@@ -36,9 +36,10 @@ export const ParseSettingsContextProvider = (props: Props) => {
     return { game: "", side: "" };
   });
 
-  useEffect(() => {
-    localStorage.setItem(ParseSettingsKey, JSON.stringify(parseSettings));
-  }, [parseSettings]);
+  // TODO need a way to load/init this without server/client execution getting in the wayi'm not
+  //   useEffect(() => {
+  //     localStorage.setItem(ParseSettingsKey, JSON.stringify(parseSettings));
+  //   }, [parseSettings]);
 
   const memoizedState = useMemo(
     () => ({ parseSettings, setParseSettings }),
