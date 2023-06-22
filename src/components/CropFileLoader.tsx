@@ -1,6 +1,6 @@
-import Button from "@mui/material/Button";
 import type { NextComponentType } from "next";
 import { useRef } from "react";
+import Button from "./Button";
 
 // TODO This is probably not screenreader friendly
 
@@ -62,14 +62,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
 
   return (
     <div>
-      <Button
-        sx={{ textTransform: "none" }}
-        className="gradient-bg"
-        variant="contained"
-        onClick={triggerFileInput}
-      >
-        Load Crop File
-      </Button>
+      <Button onClick={triggerFileInput}>Load Crop File</Button>
       <input
         type="file"
         accept="application/json"

@@ -1,12 +1,12 @@
 import React from "react";
 import Tooltip from "@mui/material/Tooltip";
-import Button from "@mui/material/Button";
 import { saveAs } from "file-saver";
 
 import CropFileLoader, { JsonCallback } from "./CropFileLoader";
 import CropTable from "./CropTable";
 import { Crop } from "@/hooks/useFFmpeg";
 import styles from "@/styles/CropControls.module.css";
+import Button from "./Button";
 
 type Props = {
   parseFramesFileJson: JsonCallback | undefined;
@@ -55,9 +55,6 @@ const CropControls = (props: Props) => {
       {props.cropData?.length > 0 && (
         <div>
           <Button
-            sx={{ textTransform: "none" }}
-            className="gradient-bg"
-            variant="contained"
             size="small"
             onClick={() => saveJson(props.cropData, "crops.json")}
           >

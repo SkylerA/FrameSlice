@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup/";
@@ -14,6 +13,7 @@ import {
   toggleStyle,
 } from "@/styles/MuiStyleObjs";
 import Dropdown from "./Dropdown";
+import Button from "./Button";
 
 export type FrameControlValues = {
   limit: number;
@@ -154,13 +154,7 @@ const FrameControls: NextComponentType<
       >
         <span>
           {/* span enables tooltip on button even when disabled */}
-          <Button
-            sx={{ textTransform: "none" }}
-            disabled={props.cropDisabled}
-            className="gradient-bg"
-            variant="contained"
-            onClick={handleCrop}
-          >
+          <Button disabled={props.cropDisabled} onClick={handleCrop}>
             Crop Video
           </Button>
         </span>

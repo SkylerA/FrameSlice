@@ -4,7 +4,6 @@ import { useWindowSize } from "usehooks-ts";
 import styles from "@/styles/inputs.module.css";
 import type { FixedSizeGrid } from "react-window";
 import Tooltip from "@mui/material/Tooltip";
-import Button from "@mui/material/Button";
 import {
   FrameResult,
   LabelLookupCb,
@@ -13,6 +12,7 @@ import {
 } from "@/utils/gamepad";
 import InputReader from "@/components/InputReader";
 import { ObjArray } from "@/utils/data";
+import Button from "./Button";
 
 // TODO this will eventually need to support custom mappings
 
@@ -181,14 +181,7 @@ const GamepadInput = (props: Props) => {
     <div className={styles.Inputs}>
       {!enabled && (
         <Tooltip arrow title="Use a connected gamepad to practice inputs">
-          <Button
-            sx={{ textTransform: "none" }}
-            className="gradient-bg"
-            variant="contained"
-            onClick={() => setEnabled((prev) => !prev)}
-          >
-            Practice
-          </Button>
+          <Button onClick={() => setEnabled((prev) => !prev)}>Practice</Button>
         </Tooltip>
       )}
 
