@@ -1,7 +1,7 @@
 import type { NextComponentType } from "next";
 import type { Crop } from "@/hooks/useFFmpeg";
-import SvgIcon from "@mui/material/SvgIcon";
 import ButtonBase from "@mui/material/ButtonBase";
+import CloseIcon from "@mui/icons-material/Close";
 
 type Props = {
   crop: Crop;
@@ -72,22 +72,14 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
       </td>
       <td>
         <ButtonBase focusRipple onClick={() => props.deleteCb?.(props.crop)}>
-          <SvgIcon
+          <CloseIcon
             sx={{
               background: "var(--gradient-small-btn-bg)",
               borderRadius: ".25rem",
               width: "1.25rem",
               height: "1.25rem",
             }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M0 0h24v24H0z" fill="none" />
-              <path
-                d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59l-4.89-4.88a.996.996 0 1 0-1.41 1.41L10.59 12l-4.88 4.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.88a.996.996 0 1 0 1.41-1.41L13.41 12l4.88-4.89c.38-.38.38-1.02 0-1.4z"
-                fill="white"
-              />
-            </svg>
-          </SvgIcon>
+          />
         </ButtonBase>
         {/* <button onClick={() => props.deleteCb?.(props.crop)}>
         </button> */}

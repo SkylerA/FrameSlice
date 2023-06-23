@@ -14,6 +14,10 @@
   --gradient-bg: linear-gradient(15deg, var(--track-color-left), var(--track-color-right));
   --gradient-small-btn-bg: linear-gradient(25deg, var(--track-color-left), var(--track-color-right));
   --scrollbar-size: 8px;
+  --gap: .25rem;
+  --header-bottom-margin: .5rem;
+  --header-height: 4rem;
+  --header-height-total: calc(var(--header-height) + var(--header-bottom-margin))
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -35,6 +39,7 @@ html {
 
 html,
 body {
+  height: 100%;
   max-width: 100vw;
   overflow-x: hidden;
 }
@@ -51,13 +56,32 @@ header {
   color: white;
   width: 100%;
   background: var(--dark-fill);
-  margin-bottom: .5rem;
+  margin-bottom: var(--header-bottom-margin);
+  /* Hardcoding header height so we can subtract it from viewport height */
+  height: var(--header-height);
 }
 
 @media (max-width: 540px) {}
 
+/* Next.Js adds it's own content wrapper so we need to set flex on this instead of body */
+#__next {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+}
+
 main {
-  min-height: calc(100vh - var(--header-height));
+  /* container-type: inline-size on this causes selections to be off for some reason */
+  /* container-type: inline-size; */
+  /* max-height: 100cqh; */
+
+  /* set main height to available space minus header height. This is required for the label editor's growing center content. Prior to this */
+  height: calc(100cqh - var(--header-height-total));
+  overflow-y: auto;
+
+  overflow-x: hidden;
+  /* container-type: inline-size; */
+
 }
 
 
@@ -144,4 +168,40 @@ video {
 *::-webkit-scrollbar-thumb {
   border-radius: var(--scrollbar-size);
   background: var(--gradient-bg);
+}
+
+.visually-hidden:not(:focus):not(:active) {
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+
+/* prevent a single image in the gallery stretching to fill the space. This might be good on base images too */
+.image-gallery img {
+  object-fit: none;
+}
+
+.image-gallery img:hover,
+.image-gallery img.selected {
+  --color: var(--track-color-right);
+  box-shadow: 0px 0px 10px 5px var(--color);
+  z-index: 1;
+  outline: 2px solid var(--color);
+  cursor: pointer;
+}
+
+/* box-shadow highlights get a bit clipped on the top and bottom due to overflow. Adding padding to max some space to render it. */
+.image-gallery {
+  padding: 5px;
+}
+
+/* // TODO come up with a single approach to MUI styles */
+.MuiInputLabel-root,
+.MuiInputLabel-root.Mui-focused {
+  color: var(--card-fg);
 }

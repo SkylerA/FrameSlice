@@ -31,3 +31,11 @@ export const groupBy = <T, K extends keyof any>(
     previous[group].push(currentItem);
     return previous;
   }, {} as Record<K, T[]>);
+
+export function fetchGetJson(response: Response) {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  } else {
+    return response.json();
+  }
+}

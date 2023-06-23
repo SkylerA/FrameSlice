@@ -42,7 +42,7 @@ const Layout = (props: Props) => {
       </header>
       <main className={`${styles.main} ${font.className}`}>
         <ParseSettingsContextProvider>
-          <div>{props.children}</div>
+          {props.children}
         </ParseSettingsContextProvider>
       </main>
     </>
