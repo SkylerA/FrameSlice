@@ -71,10 +71,12 @@ function groupResults(cropResults: CropResult[]) {
   // get group names
   const keys = Array.from(Reflect.ownKeys(resultMap) as string[]);
 
+  const dispStyle = keys.length > 1 ? styles.column : styles.singleClass;
+
   // loop through each group and add images to a div
   return keys.map((key) => (
-    <div className={styles.cropGroup} key={key}>
-      <h3>{key}</h3>
+    <div className={dispStyle} key={key}>
+      {keys.length > 1 && <h3>{key}</h3>}
       {resultMap[key].map((obj, idx) => {
         const { url, classIdx } = obj;
         if (vid) {

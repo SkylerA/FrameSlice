@@ -9,8 +9,11 @@
     max-width: 100%
 }
 
-.cropGroup .result {
+.cropResults .column {}
+
+.cropResults .singleClass {
     display: flex;
-    align-items: center;
-    gap: .5rem;
+    flex-wrap: wrap;
+    gap: var(--gap);
+    justify-content: center;
 }
