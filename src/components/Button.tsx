@@ -12,6 +12,7 @@ const Button = (props: Props) => {
       className="gradient-bg"
       variant="contained"
       onClick={props.onClick}
+      style={props.style}
     >
       {props.children}
     </MuiButton>

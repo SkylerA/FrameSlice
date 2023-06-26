@@ -7,6 +7,8 @@ import FolderLabelLoader, { imgObj } from "./FolderLoader";
 import Button from "../Button";
 import FloatingLabelDropdown from "../FloatingLabelDropdown";
 
+import styles from "@/styles/ClassLabelEditor.module.css";
+
 // TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
 
 // TODO Feature: Add some form of label for class sections
@@ -184,58 +186,39 @@ function ClassLabelEditor(props: Props) {
   // };
 
   return (
-    <div
-      className="label-editor-container"
-      style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--gap)",
-        padding: "var(--gap)",
-        // extra space to avoid clipping the Showing label top
-        paddingTop: "calc(var(--gap) + .25rem)",
-        // Note that margin shouldn't be used at this level as it will add scroll bars to <main> because it is fixed
-      }}
-    >
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: "var(--gap)",
-        }}
-      >
-        <FolderLabelLoader onDataAvail={handleData} />
-        <span>
-          {/* Dropdown provides its components without a container for grid layouts so we add a span so things look right in our flex layout */}
-          <FloatingLabelDropdown
-            entries={[ALL, ...classOptions]}
-            value={selectedClass}
-            label="Showing"
-            onChange={(e) => setSelectedClass(e.target.value as string)}
-          />
+    <div className={styles.LabelEditor}>
+      <span className={styles.topControls}>
+        <span className={styles.loader}>
+          <FolderLabelLoader onDataAvail={handleData} />
         </span>
+        {selectedImgIdxs.length > 0 && (
+          <LabelEdit
+            className={styles.labelEdit}
+            classes={classOptions}
+            defaultClass={getSelectedImgClass(selectedImgIdxs[0]) ?? ""} // update label to the class of first selected item
+            onClassChange={handleEditChange}
+          />
+        )}
+        {imgUrls.length > 0 && (
+          <span className={styles.labelSelect}>
+            {/* Dropdown provides its components without a container for grid layouts so we add a span so things look right in our flex layout */}
+            <FloatingLabelDropdown
+              className={styles.showing}
+              entries={[ALL, ...classOptions]}
+              value={selectedClass}
+              label="Showing"
+              onChange={(e) => setSelectedClass(e.target.value as string)}
+            />
+          </span>
+        )}
       </span>
-      {selectedImgIdxs.length > 0 && (
-        <LabelEdit
-          classes={classOptions}
-          defaultClass={getSelectedImgClass(selectedImgIdxs[0]) ?? ""} // update label to the class of first selected item
-          onClassChange={handleEditChange}
-        />
-      )}
       <ImgGallery
         urls={imgUrls}
         selectedIdxs={selectedImgIdxs}
         onSelectionChanged={(idxs) => setSelectedImgIdxs(idxs)}
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          flexGrow: "1",
-          overflowY: "auto",
-          gap: "var(--gap)",
-          justifyContent: "center",
-        }}
+        className={styles.imageGallery}
       />
-      <div className="label-editor-controls">
+      <div className={styles.bottomControls}>
         {imgUrls.length > 0 && (
           <Button onClick={downloadAll}>Download Label Dirs</Button>
         )}

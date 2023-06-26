@@ -10,6 +10,7 @@ type Props = {
   classes: string[];
   defaultClass?: string;
   onClassChange: (newClass: string) => void;
+  className?: string;
 };
 
 const NEW = "(New Class)";
@@ -37,12 +38,11 @@ function LabelEdit(props: Props) {
 
   return (
     <div
-      className="label-edit"
+      className={props.className ?? "label-edit"}
       style={{
         display: "flex",
         gap: "var(--gap)",
         // justifyContent: "end",
-        marginTop: "var(--gap)",
         alignItems: "center",
       }}
     >

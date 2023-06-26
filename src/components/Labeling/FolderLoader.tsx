@@ -90,7 +90,10 @@ function FolderLabelLoader(props: FolderLoaderProps) {
         arrow
         title={<div style={{ whiteSpace: "pre-line" }}>{note}</div>}
       >
-        <Button onClick={() => triggerFileInput(fileRef)}>
+        <Button
+          onClick={() => triggerFileInput(fileRef)}
+          style={{ whiteSpace: "nowrap", minWidth: "auto" }}
+        >
           Load Img Folder
         </Button>
       </Tooltip>
