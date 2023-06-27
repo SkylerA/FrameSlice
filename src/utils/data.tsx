@@ -1,4 +1,9 @@
 export type ObjArray = { [key: string]: any }[];
+export type ImgObj = {
+  url: string;
+  file: File;
+  classStr: string;
+};
 
 // This creates a map of arrays that will auto generate the array the first time a bucket is accessed
 type AutoArrayMap<T> = { [key: string]: T[] };
@@ -39,3 +44,9 @@ export function fetchGetJson(response: Response) {
     return response.json();
   }
 }
+
+export const classStrSort = (a: ImgObj, b: ImgObj) => {
+  if (a.classStr < b.classStr) return -1;
+  if (b.classStr < a.classStr) return 1;
+  return 0;
+};

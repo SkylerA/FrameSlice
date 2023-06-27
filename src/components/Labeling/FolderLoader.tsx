@@ -1,12 +1,7 @@
 import Tooltip from "@mui/material/Tooltip";
 import React, { useEffect, useRef, useState } from "react";
 import Button from "../Button";
-
-export type imgObj = {
-  url: string;
-  file: File;
-  classStr: string;
-};
+import type { ImgObj } from "@/utils/data";
 
 // This will grab the directory above the final file path based off the last slashes
 // Ex: Labels/Blah/1.png and Blah/1.png will both return "Blah" as the parent
@@ -19,12 +14,12 @@ const getParentDir = (path: string) => {
 };
 
 type FolderLoaderProps = {
-  onDataAvail?: (data: imgObj[]) => void;
+  onDataAvail?: (data: ImgObj[]) => void;
 };
 
 function FolderLabelLoader(props: FolderLoaderProps) {
   const [imgFiles, setImgFiles] = useState<File[]>([]);
-  const [imgObjs, setImgObjs] = useState<imgObj[]>([]);
+  const [imgObjs, setImgObjs] = useState<ImgObj[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // For whatever reason, typescript or react squawks when these attributes are in the actual jsx so we create it here and then destructure in the render
@@ -58,14 +53,14 @@ function FolderLabelLoader(props: FolderLoaderProps) {
       };
     });
     setImgObjs(objs);
-  }, [imgFiles]); // intentionally ignoring imgObjs as we only use it for cleanup of previous results
+  }, [imgFiles.length, JSON.stringify(imgFiles)]); // intentionally ignoring imgObjs as we only use it for cleanup of previous results
 
   // Alert parent component to new data
   useEffect(() => {
     if (props.onDataAvail) {
       props.onDataAvail(imgObjs);
     }
-  }, [imgObjs]); // adding props here causes infinite re-renders, i'm using a callback on the cb passed in but it still perma-renders for some reason
+  }, [imgObjs.length, JSON.stringify(imgObjs)]); // adding props here causes infinite re-renders, i'm using a callback on the cb passed in but it still perma-renders for some reason
 
   function triggerFileInput(fileRef: React.RefObject<HTMLInputElement>): void {
     if (fileRef.current) {
