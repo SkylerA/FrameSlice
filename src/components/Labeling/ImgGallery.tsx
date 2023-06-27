@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import React, { useEffect, useState } from "react";
 
 type Props = {
@@ -66,7 +67,10 @@ function ImgGallery(props: Props) {
 
   // TODO If a single image is shown then the highlight goes to the top/bottom of the entire component.
   return (
-    <div className={props.className ?? "image-gallery"} style={props.style}>
+    <div
+      className={classnames("image-gallery", props.className)}
+      style={props.style}
+    >
       <>
         {props.urls.map((url, idx) => (
           <img
