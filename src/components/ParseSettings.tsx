@@ -3,6 +3,7 @@ import Dropdown from "./Dropdown";
 
 import styles from "@/styles/ParseSettings.module.css";
 import { ParseSettingsContext } from "./contexts/parseSettingsContext";
+import { ParseSettings } from "@/utils/parse";
 
 type Props = {};
 
@@ -23,17 +24,21 @@ const ParseSettings = (props: Props) => {
       <Dropdown
         label="Game"
         value={game}
-        onChangeCb={(val) =>
-          setParseSettings((prev) => ({ ...prev, game: val }))
-        }
+        onChange={(e) => {
+          setParseSettings(
+            (prev) => ({ ...prev, game: e.target.value } as ParseSettings)
+          );
+        }}
         entries={games}
       />
       <Dropdown
         label="Player"
         value={side}
-        onChangeCb={(val) =>
-          setParseSettings((prev) => ({ ...prev, side: val }))
-        }
+        onChange={(e) => {
+          setParseSettings(
+            (prev) => ({ ...prev, side: e.target.value } as ParseSettings)
+          );
+        }}
         entries={sides}
       />
     </div>

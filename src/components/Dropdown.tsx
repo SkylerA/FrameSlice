@@ -6,7 +6,6 @@ import React from "react";
 
 type Props = SelectProps & {
   entries: string[];
-  onChangeCb: (newVal: string) => void;
 };
 
 const MenuEntry = (name: string) => (
@@ -22,12 +21,7 @@ const Dropdown = (props: Props) => {
       {props.label && (
         <span style={{ marginRight: "var(--gap)" }}>{props.label}</span>
       )}
-      <Select
-        onChange={(e) => props.onChangeCb((e.target?.value as string) ?? "")}
-        sx={selectStyle}
-        size="small"
-        {...rest}
-      >
+      <Select sx={selectStyle} size="small" {...rest}>
         {entries.map((entry) => MenuEntry(entry))}
       </Select>
     </>

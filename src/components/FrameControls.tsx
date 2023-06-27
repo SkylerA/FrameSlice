@@ -141,7 +141,7 @@ const FrameControls: NextComponentType<
           value={output}
           // TODO find a way to infer this array from the OutputMode type
           entries={["png", "jpg", "bmp", "gif", "video"]}
-          onChangeCb={(val) => setOutput(val as OutputMode)}
+          onChange={(e) => setOutput(e.target.value as OutputMode)}
         />
       </div>
       <Tooltip
