@@ -8,15 +8,15 @@ interface Props extends ButtonProps {}
 
 const Button = React.forwardRef<typeof MuiButton, Props>(
   (props: Props, ref: ForwardedRef<typeof MuiButton>) => {
+    const { className, children, ...rest } = props;
     return (
       <MuiButton
+        {...rest}
         sx={{ textTransform: "none" }}
-        className={classnames("gradient-bg", props.className)}
+        className={classnames("gradient-bg", className)}
         variant="contained"
-        onClick={props.onClick}
-        style={props.style}
       >
-        {props.children}
+        {children}
       </MuiButton>
     );
   }
