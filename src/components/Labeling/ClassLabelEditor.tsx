@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import ImgGallery from "./ImgGallery";
 import LabelEdit from "./LabelEdit";
 import JSZip from "jszip";
@@ -15,7 +21,7 @@ import classnames from "classnames";
 // TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
 
 // TODO Feature: Add some form of label for class sections
-type Props = {
+type Props = ComponentProps<"div"> & {
   data?: ImgObj[];
   onUpload?: (success: boolean, error?: string) => void;
   showLoadFolder?: boolean;
@@ -101,6 +107,8 @@ export const hasGet = <T,>(obj: object, field: string): T | undefined =>
 // };
 
 function ClassLabelEditor(props: Props) {
+  const { data, onUpload, showLoadFolder, ...rest } = props;
+
   const [imgObjs, setImgObjs] = useState<ImgObj[]>([]);
   const [imgUrls, setImgUrls] = useState<string[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
@@ -187,7 +195,7 @@ function ClassLabelEditor(props: Props) {
   const withLoader = props.showLoadFolder ? "withLoader" : "";
 
   return (
-    <div className={classnames(styles.LabelEditor, withLoader)}>
+    <div {...rest} className={classnames(styles.LabelEditor, withLoader)}>
       <span className={styles.topControls}>
         {props.showLoadFolder && (
           <span className={styles.loader}>
