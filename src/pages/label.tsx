@@ -7,7 +7,7 @@ type Props = {};
 const Label = (props: Props) => {
   return (
     <>
-      <ClassLabelEditor />
+      <ClassLabelEditor showLoadFolder />
     </>
   );
 };

@@ -10,6 +10,7 @@ import FloatingLabelDropdown from "../FloatingLabelDropdown";
 import styles from "@/styles/ClassLabelEditor.module.css";
 import { fetchAndZipImg } from "@/utils/zip";
 import { classStrSort, type ImgObj } from "@/utils/data";
+import classnames from "classnames";
 
 // TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
 
@@ -17,6 +18,7 @@ import { classStrSort, type ImgObj } from "@/utils/data";
 type Props = {
   data?: ImgObj[];
   onUpload?: (success: boolean, error?: string) => void;
+  showLoadFolder?: boolean;
 };
 
 const updateClasses = (
@@ -182,12 +184,16 @@ function ClassLabelEditor(props: Props) {
     return obj?.classStr ?? "";
   };
 
+  const withLoader = props.showLoadFolder ? "withLoader" : "";
+
   return (
-    <div className={styles.LabelEditor}>
+    <div className={classnames(styles.LabelEditor, withLoader)}>
       <span className={styles.topControls}>
-        <span className={styles.loader}>
-          <FolderLabelLoader onDataAvail={handleData} />
-        </span>
+        {props.showLoadFolder && (
+          <span className={styles.loader}>
+            <FolderLabelLoader onDataAvail={handleData} />
+          </span>
+        )}
         {selectedImgIdxs.length > 0 && (
           <LabelEdit
             className={styles.labelEdit}
