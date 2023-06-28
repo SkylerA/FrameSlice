@@ -8,9 +8,11 @@ type Props = ComponentProps<"div"> & {};
 const Card: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
+  const { className, children, ...rest } = props;
+
   return (
-    <div className={classnames(styles.Card, props.className)}>
-      {props.children}
+    <div className={classnames(styles.Card, className)} {...rest}>
+      {children}
     </div>
   );
 };
