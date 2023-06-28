@@ -10,6 +10,7 @@ import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
 import { ImgTypes } from "@/hooks/useFFmpeg";
 import Progress from "./Progress";
+import { emojiBtnStyle } from "@/styles/MuiStyleObjs";
 
 type Props = {
   cropResults: CropResult[];
@@ -123,13 +124,7 @@ const CropResults: NextComponentType<Record<string, never>, unknown, Props> = (
               onClick={(e) => downloadCrops(props.cropResults)}
               size="large"
             >
-              <DownloadIcon
-                sx={{
-                  color: "white",
-                  background: "var(--gradient-small-btn-bg)",
-                  borderRadius: ".25rem",
-                }}
-              />
+              <DownloadIcon sx={emojiBtnStyle} />
             </IconButton>
           </Tooltip>
         )}

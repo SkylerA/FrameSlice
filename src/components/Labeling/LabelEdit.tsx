@@ -4,7 +4,7 @@ import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import FloatingLabelDropdown from "../FloatingLabelDropdown";
 import TextField from "@mui/material/TextField";
-import { textFieldStyle } from "@/styles/MuiStyleObjs";
+import { emojiBtnStyle, textFieldStyle } from "@/styles/MuiStyleObjs";
 
 type Props = {
   classes: string[];
@@ -70,8 +70,7 @@ function LabelEdit(props: Props) {
       <ButtonBase focusRipple onClick={handleEditOk}>
         <DoneIcon
           sx={{
-            background: "var(--gradient-small-btn-bg)",
-            borderRadius: ".25rem",
+            ...emojiBtnStyle,
             // width: "1.25rem",
             // height: "1.25rem",
           }}
@@ -80,8 +79,7 @@ function LabelEdit(props: Props) {
       <ButtonBase focusRipple onClick={handleEditCancel}>
         <CloseIcon
           sx={{
-            background: "var(--gradient-small-btn-bg)",
-            borderRadius: ".25rem",
+            ...emojiBtnStyle,
             // width: "1.25rem",
             // height: "1.25rem",
           }}

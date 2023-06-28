@@ -44,6 +44,12 @@ export const labelStyle = {
   whiteSpace: "unset",
 };
 
+export const emojiBtnStyle = {
+  background: "var(--gradient-small-btn-bg)",
+  borderRadius: ".25rem",
+  color: "var(--card-fg)",
+};
+
 export const selectStyle = {
   color: "var(--card-fg)",
   "& .MuiOutlinedInput-notchedOutline": {

@@ -2,6 +2,7 @@ import type { NextComponentType } from "next";
 import type { Crop } from "@/hooks/useFFmpeg";
 import ButtonBase from "@mui/material/ButtonBase";
 import CloseIcon from "@mui/icons-material/Close";
+import { emojiBtnStyle } from "@/styles/MuiStyleObjs";
 
 type Props = {
   crop: Crop;
@@ -73,12 +74,7 @@ const CropRow: NextComponentType<Record<string, never>, unknown, Props> = (
       <td>
         <ButtonBase focusRipple onClick={() => props.deleteCb?.(props.crop)}>
           <CloseIcon
-            sx={{
-              background: "var(--gradient-small-btn-bg)",
-              borderRadius: ".25rem",
-              width: "1.25rem",
-              height: "1.25rem",
-            }}
+            sx={{ ...emojiBtnStyle, width: "1.25rem", height: "1.25rem" }}
           />
         </ButtonBase>
         {/* <button onClick={() => props.deleteCb?.(props.crop)}>
