@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import ImgGallery from "./ImgGallery";
 import LabelEdit, { LABEL_EDIT_IGNORE } from "./LabelEdit";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import FolderLabelLoader from "./FolderLoader";
 import Button from "../Button";
@@ -44,9 +43,11 @@ const updateClasses = (
 };
 
 // Create a zip of all crops in their respective label folders
-const downloadLabels = (objs: ImgObj[]) => {
+const downloadLabels = async (objs: ImgObj[]) => {
   // TODO download prep can be very slow sometimes and page looks unresponsive. Need to investigate why this goes so slow sometimes or at least put up some progress indicator.
   // TODO need to do research on what happens in a duplicate name is added to zip, probably need to add some checks to update numbers if there is a dupe. In particular if we allow label editing and 1.png of class S get's moved to P that also has 1.png etc etc
+  const JSZip = (await import("jszip")).default;
+
   const zip = new JSZip();
 
   // Add images to zip
