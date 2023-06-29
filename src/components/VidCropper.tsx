@@ -9,7 +9,7 @@ import useFFmpeg, {
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
 import type { Json } from "./CropFileLoader";
-import CropResults, { CropResult } from "./CropResults";
+import type { CropResult } from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
 import VideoControl from "./VideoControl";
@@ -20,9 +20,19 @@ import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import styles from "@/styles/VidCropper.module.css";
 
 import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
-import ClassLabelEditor from "./Labeling/ClassLabelEditor";
 import type { ImgObj } from "@/utils/data";
 import ScrollOnShow from "./ScrollOnShow";
+import dynamic from "next/dynamic";
+
+const ClassLabelEditor = dynamic(() => import("./Labeling/ClassLabelEditor"), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
+
+const CropResults = dynamic(() => import("./CropResults"), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
 
 type Props = {};
 

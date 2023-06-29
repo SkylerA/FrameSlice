@@ -1,11 +1,25 @@
 import React, { RefObject, useEffect, useMemo } from "react";
 import DropZone from "./DropZone";
-import SelectionContainer, { Box } from "./SelectionContainer";
+import type { Box } from "./SelectionContainer";
+
 import { Crop } from "@/hooks/useFFmpeg";
-import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
 import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import styles from "@/styles/VideoControl.module.css";
 import type { DropEvent, FileRejection, FileWithPath } from "react-dropzone";
+import dynamic from "next/dynamic";
+
+const SelectionContainer = dynamic(() => import("./SelectionContainer"), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
+
+const MultiRangeSlider = dynamic(
+  () => import("./multiRangeSlider/MultiRangeSlider"),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
+  }
+);
 
 type Props = {
   stopTime: number;
@@ -101,9 +115,7 @@ const VideoControl = (props: Props) => {
 
   return (
     <div className={styles.VideoControl}>
-      {!haveVid && (
-        <DropZone onFileChange={handleVidSelection} fileSelectedCb={loadVid} />
-      )}
+      {!haveVid && <DropZone onFileChange={handleVidSelection} />}
       {haveVid && (
         <>
           <SelectionContainer
