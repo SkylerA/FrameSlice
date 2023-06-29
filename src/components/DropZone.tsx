@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import {
+  DropEvent,
+  FileRejection,
+  FileWithPath,
+  useDropzone,
+} from "react-dropzone";
 
 const baseStyle = {
   display: "flex",
@@ -14,19 +19,21 @@ const baseStyle = {
 };
 
 type Props = {
-  fileSelectedCb: (file: File) => void;
+  onFileChange: (
+    acceptedFiles: FileWithPath[],
+    fileRejections: FileRejection[],
+    event: DropEvent
+  ) => void;
 };
 
 const DropZone = (props: Props) => {
+  const { onFileChange } = props;
+
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: { "video/*": [] },
     multiple: false,
+    onDrop: onFileChange,
   });
-
-  useEffect(() => {
-    const file = acceptedFiles[0];
-    props.fileSelectedCb(file);
-  }, [JSON.stringify(acceptedFiles)]);
 
   return (
     <div

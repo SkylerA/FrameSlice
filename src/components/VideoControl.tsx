@@ -5,6 +5,7 @@ import { Crop } from "@/hooks/useFFmpeg";
 import MultiRangeSlider from "./multiRangeSlider/MultiRangeSlider";
 import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import styles from "@/styles/VideoControl.module.css";
+import type { DropEvent, FileRejection, FileWithPath } from "react-dropzone";
 
 type Props = {
   stopTime: number;
@@ -90,9 +91,19 @@ const VideoControl = (props: Props) => {
 
   const haveVid = props.vidSrc !== "";
 
+  function handleVidSelection(
+    acceptedFiles: FileWithPath[],
+    fileRejections: FileRejection[],
+    event: DropEvent
+  ): void {
+    loadVid(acceptedFiles[0]);
+  }
+
   return (
     <div className={styles.VideoControl}>
-      {!haveVid && <DropZone fileSelectedCb={loadVid} />}
+      {!haveVid && (
+        <DropZone onFileChange={handleVidSelection} fileSelectedCb={loadVid} />
+      )}
       {haveVid && (
         <>
           <SelectionContainer
