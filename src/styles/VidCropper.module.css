@@ -9,7 +9,6 @@
     padding-bottom: 1rem;
 }
 
-.VidCropper .cropGroup {
-    display: grid;
-    align-content: space-between;
+.labelBtn {
+    margin-top: var(--gap);
 }

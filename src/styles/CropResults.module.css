@@ -17,3 +17,24 @@
     gap: var(--gap);
     justify-content: center;
 }
+
+.headingContainer {
+    position: relative;
+    text-align: center;
+
+    /* Hardcoded for this site, currently adds enough space for 2 buttons and some space */
+    min-width: 19rem;
+}
+
+.headingContainer h2 {
+    display: inline;
+}
+
+.headingContainer .buttons {
+    display: inline-flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: var(--gap);
+    margin-left: var(--gap);
+}

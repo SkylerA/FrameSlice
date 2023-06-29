@@ -50,3 +50,24 @@ export const classStrSort = (a: ImgObj, b: ImgObj) => {
   if (b.classStr < a.classStr) return 1;
   return 0;
 };
+
+// selected with [] implies all classes besides ignored
+export const filterAndIgnoreImgObjs = (
+  objs: ImgObj[],
+  selected: string[],
+  ignore: string[]
+) => {
+  // Assume all if selected array is empty or only "" is passed
+  const showAll =
+    selected.length < 1 || (selected.length === 1 && selected[0] === "");
+
+  return Array.from(objs).filter((obj) =>
+    !ignore.includes(obj.classStr) && showAll
+      ? true
+      : selected.includes(obj.classStr)
+  );
+};
+
+// Helper function to keep typescript from complaining about object.blah references for json results that are typed as objects for now
+export const hasGet = <T,>(obj: object, field: string): T | undefined =>
+  Object.hasOwn(obj, field) ? (obj[field as keyof typeof obj] as T) : undefined;

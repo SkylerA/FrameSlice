@@ -183,7 +183,8 @@ video {
 
 /* prevent a single image in the gallery stretching to fill the space. This might be good on base images too */
 .image-gallery img {
-  object-fit: none;
+  object-fit: scale-down;
+  max-width: 100%;
 }
 
 .image-gallery img:hover,

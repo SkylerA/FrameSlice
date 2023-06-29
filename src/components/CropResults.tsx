@@ -1,4 +1,3 @@
-import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DownloadIcon from "@mui/icons-material/Download";
 import type { NextComponentType } from "next";
@@ -11,11 +10,14 @@ import { useMemo } from "react";
 import { ImgTypes } from "@/hooks/useFFmpeg";
 import Progress from "./Progress";
 import { emojiBtnStyle } from "@/styles/MuiStyleObjs";
+import ButtonBase from "@mui/material/ButtonBase";
+import SvgIcon from "@mui/icons-material/Download";
 
 type Props = {
   cropResults: CropResult[];
   loading: boolean;
   progress?: number;
+  extraBtns?: { icon: typeof SvgIcon; toolTip?: string; cb: () => void }[];
 };
 
 export type CropResult = {
@@ -115,20 +117,30 @@ const CropResults: NextComponentType<Record<string, never>, unknown, Props> = (
 
   return (
     <>
-      <h2>
-        Crop Results
+      <div className={styles.headingContainer}>
+        <h2>Crop Results</h2>
         {!props.loading && (
-          <Tooltip arrow placement="right" title="Download Crops">
-            <IconButton
-              focusRipple
-              onClick={(e) => downloadCrops(props.cropResults)}
-              size="large"
-            >
-              <DownloadIcon sx={emojiBtnStyle} />
-            </IconButton>
-          </Tooltip>
+          <span className={styles.buttons}>
+            <Tooltip arrow title="Download Crops" key="dlCrops">
+              <ButtonBase
+                focusRipple
+                onClick={(e) => downloadCrops(props.cropResults)}
+              >
+                <DownloadIcon sx={emojiBtnStyle} />
+              </ButtonBase>
+            </Tooltip>
+            {props.extraBtns?.map((btn) => {
+              return (
+                <Tooltip arrow title={btn.toolTip} key={btn.toolTip?.trim()}>
+                  <ButtonBase focusRipple onClick={btn.cb}>
+                    <btn.icon sx={emojiBtnStyle} />
+                  </ButtonBase>
+                </Tooltip>
+              );
+            })}
+          </span>
         )}
-      </h2>
+      </div>
       {props.loading && (
         <>
           <ScrollOnShow />

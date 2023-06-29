@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import type { NextComponentType } from "next";
 import useFFmpeg, {
   Crop,
+  ImgTypes,
   freeUrls,
   handleFFmpegProgress,
 } from "@/hooks/useFFmpeg";
@@ -12,11 +13,16 @@ import CropResults, { CropResult } from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
 import VideoControl from "./VideoControl";
+import Button from "./Button";
 import mime from "mime/lite";
+import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 
 import styles from "@/styles/VidCropper.module.css";
 
 import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
+import ClassLabelEditor from "./Labeling/ClassLabelEditor";
+import type { ImgObj } from "@/utils/data";
+import ScrollOnShow from "./ScrollOnShow";
 
 type Props = {};
 
@@ -33,9 +39,12 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [parseProgress, setParseProgress] = useState<number>(0);
   const [vidW, setVidW] = useState<number>(0);
   const [vidH, setVidH] = useState<number>(0);
+  const [runFrameVals, setRunFrameVals] = useState<FrameControlValues>(
+    {} as FrameControlValues
+  );
+  const [cropImgObjs, setCropImgObjs] = useState<ImgObj[]>([]);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
-
   const editCropsCb = useCallback((crops: Crop[]) => {
     setCropData(crops);
   }, []);
@@ -108,9 +117,11 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       ...limit,
     };
     const file = videoRef.current?.src ?? "";
+    setCropImgObjs([]);
     setCropResults([]);
     setParseProgress(0);
     setLoading(true);
+    setRunFrameVals(frameVals);
     parseVideo(
       file,
       cropData,
@@ -125,6 +136,16 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     setVidW(width);
     setVidH(height);
   }
+
+  function showLabelEditor(): void {
+    const imgObjs = cropResults.map(
+      (result) => ({ url: result.url, classStr: result.name } as ImgObj)
+    );
+    setCropImgObjs([...imgObjs]);
+  }
+
+  const showLabels = cropImgObjs.length > 0;
+  const showResults = !showLabels && (cropResults.length > 0 || loading);
 
   return (
     <div className={styles.VidCropper}>
@@ -157,13 +178,35 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       <Card>
         <FrameControls cropCb={cropVidCb} cropDisabled={cropDisabled} />
       </Card>
-      {(cropResults.length > 0 || loading) && (
+      {showResults && (
+        <>
+          <Card>
+            <CropResults
+              cropResults={cropResults}
+              loading={loading}
+              progress={parseProgress}
+              extraBtns={[
+                {
+                  toolTip: "Label Crops",
+                  cb: showLabelEditor,
+                  icon: LabelOutlinedIcon,
+                },
+              ]}
+            />
+            {cropResults.length > 0 &&
+              ImgTypes.includes(runFrameVals.outputMode) && (
+                <Button className={styles.labelBtn} onClick={showLabelEditor}>
+                  Label Crops
+                </Button>
+              )}
+          </Card>
+        </>
+      )}
+      {showLabels && (
         <Card>
-          <CropResults
-            cropResults={cropResults}
-            loading={loading}
-            progress={parseProgress}
-          />
+          <h2>Crop Labelor</h2>
+          <ScrollOnShow />
+          <ClassLabelEditor style={{ maxHeight: "70dvh" }} data={cropImgObjs} />
         </Card>
       )}
     </div>

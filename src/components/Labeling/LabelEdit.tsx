@@ -13,7 +13,11 @@ type Props = {
   className?: string;
 };
 
-const NEW = "(New Class)";
+export const LABEL_EDIT_NEW = "(New Class)";
+export const LABEL_EDIT_IGNORE = "(Ignore)";
+
+const NEW = LABEL_EDIT_NEW;
+const IGNORE = LABEL_EDIT_IGNORE;
 
 function LabelEdit(props: Props) {
   const [newClass, setNewClass] = useState<string>("");
@@ -47,7 +51,7 @@ function LabelEdit(props: Props) {
       }}
     >
       <FloatingLabelDropdown
-        entries={[NEW, ...props.classes]}
+        entries={[NEW, ...props.classes, IGNORE]}
         value={classVal}
         label="Class"
         onChange={(e) => setClassVal(e.target.value as string)}

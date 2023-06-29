@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import ImgGallery from "./ImgGallery";
-import LabelEdit from "./LabelEdit";
+import LabelEdit, { LABEL_EDIT_IGNORE } from "./LabelEdit";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import FolderLabelLoader from "./FolderLoader";
@@ -15,7 +15,11 @@ import FloatingLabelDropdown from "../FloatingLabelDropdown";
 
 import styles from "@/styles/ClassLabelEditor.module.css";
 import { fetchAndZipImg } from "@/utils/zip";
-import { classStrSort, type ImgObj } from "@/utils/data";
+import {
+  classStrSort,
+  filterAndIgnoreImgObjs,
+  type ImgObj,
+} from "@/utils/data";
 import classnames from "classnames";
 
 // TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
@@ -34,6 +38,8 @@ const updateClasses = (
   // collect and store new class options based off data
   const classStrs = imgObjs.map((obj) => obj.classStr);
   const uniqueClasses = new Set(classStrs);
+  // remove ignore entry, it will be added manually in the ui
+  uniqueClasses.delete(LABEL_EDIT_IGNORE);
   setClasses(Array.from(uniqueClasses).sort());
 };
 
@@ -68,10 +74,6 @@ const downloadLabels = (objs: ImgObj[]) => {
     });
   });
 };
-
-// Helper function to keep typescript from complaining about object.blah references for json results that are typed as objects for now
-export const hasGet = <T,>(obj: object, field: string): T | undefined =>
-  Object.hasOwn(obj, field) ? (obj[field as keyof typeof obj] as T) : undefined;
 
 // Moved out of of compoenent while commented out, might need to update some variables before use
 // const uploadLabels = () => {
@@ -137,14 +139,15 @@ function ClassLabelEditor(props: Props) {
   }, [JSON.stringify(props.data)]);
 
   const showAll = selectedClass === ALL;
-  const images = useMemo(
-    () =>
-      showAll
-        ? imgObjs.sort(classStrSort)
-        : imgObjs.filter((obj) => obj.classStr === selectedClass),
-    [selectedClass, imgObjs, showAll]
-  );
-  const urls = images.map((img) => img.url); // technically should probably useMemo this, but since react can't properly depend on arrays/objects, the JSON.stringify() to actually check for changes would prolly take longer than just running this line every time.
+
+  // Create array with (Ignore) removed and match to selectedClass if not showing All
+  const filteredObjs = useMemo(() => {
+    const selected = selectedClass === ALL ? [""] : [selectedClass];
+    const ignored = [LABEL_EDIT_IGNORE];
+    return filterAndIgnoreImgObjs(imgObjs, selected, ignored);
+  }, [selectedClass, imgObjs]);
+
+  const urls = filteredObjs.map((img) => img.url); // technically should probably useMemo this, but since react can't properly depend on arrays/objects, the JSON.stringify() to actually check for changes would prolly take longer than just running this line every time.
 
   const updateImgFilter = (selectedClass: string, objs: ImgObj[]) => {
     const images = showAll
@@ -169,11 +172,11 @@ function ClassLabelEditor(props: Props) {
         // clear selection
         setSelectedImgIdxs([]);
       } else {
+        // TODO see about removing imgObjs deps by moving this logic inside a setImgObjs( (prev) => ) call
         const updateObjs = [...imgObjs];
         // selectedImgIdxs is relative to imgUrls which is a subset of imgObjs
         // need to use imgUrls to find original imgObj to update
         const updateUrls = selectedImgIdxs.map((idx) => urls[idx]);
-        // const updateUrls = selectedImgIdxs.map((idx) => imgUrls[idx]);
         // update the class of any object with a matching url
         const newObjs: ImgObj[] = updateObjs.map((obj) =>
           updateUrls.includes(obj.url) ? { ...obj, classStr: val } : obj
@@ -194,6 +197,12 @@ function ClassLabelEditor(props: Props) {
 
   const withLoader = props.showLoadFolder ? "withLoader" : "";
 
+  // setting up useCallback for proper code, but i think a dep on filteredObjs as an array will currently cause this to update everytime with react's current dep handling
+  const download = useCallback(
+    () => downloadLabels(filteredObjs),
+    [filteredObjs]
+  );
+
   return (
     <div {...rest} className={classnames(styles.LabelEditor, withLoader)}>
       <span className={styles.topControls}>
@@ -210,18 +219,16 @@ function ClassLabelEditor(props: Props) {
             onClassChange={handleEditChange}
           />
         )}
-        {urls.length > 0 && (
-          <span className={styles.labelSelect}>
-            {/* Dropdown provides its components without a container for grid layouts so we add a span so things look right in our flex layout */}
-            <FloatingLabelDropdown
-              className={styles.showing}
-              entries={[ALL, ...classOptions]}
-              value={selectedClass}
-              label="Showing"
-              onChange={(e) => setSelectedClass(e.target.value as string)}
-            />
-          </span>
-        )}
+        <span className={styles.labelSelect}>
+          {/* Dropdown provides its components without a container for grid layouts so we add a span so things look right in our flex layout */}
+          <FloatingLabelDropdown
+            className={styles.showing}
+            entries={[ALL, ...classOptions, "(Ignore)"]}
+            value={selectedClass}
+            label="Showing"
+            onChange={(e) => setSelectedClass(e.target.value as string)}
+          />
+        </span>
       </span>
       <ImgGallery
         urls={urls}
@@ -231,10 +238,9 @@ function ClassLabelEditor(props: Props) {
       />
       <div className={styles.bottomControls}>
         {urls.length > 0 && (
-          <Button onClick={() => downloadLabels(imgObjs)}>
-            Download Label Dirs
-          </Button>
+          <Button onClick={download}>Download Label Dirs</Button>
         )}
+        {/* TODO When re-enabling upload, make sure to use download's approach to using the filtered values so we don't include ignore etc */}
         {/* <button className="small" onClick={uploadLabels}>
           Add Labels to Model {isUploading && <span>🔃</span>}
         </button> */}
