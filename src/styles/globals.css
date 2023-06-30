@@ -200,9 +200,3 @@ video {
 .image-gallery {
   padding: 5px;
 }
-
-/* // TODO come up with a single approach to MUI styles */
-.MuiInputLabel-root,
-.MuiInputLabel-root.Mui-focused {
-  color: var(--card-fg);
-}

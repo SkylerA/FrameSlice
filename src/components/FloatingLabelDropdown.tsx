@@ -1,5 +1,5 @@
 // Mui Select with floating label and site styling
-import { selectStyle } from "@/styles/MuiStyleObjs";
+import { labelStyle, selectStyle } from "@/styles/MuiStyleObjs";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -22,7 +22,9 @@ const FloatingLabelDropdown = (props: Props) => {
   return (
     <>
       <FormControl size="small">
-        <InputLabel id={labelId}>{props.label}</InputLabel>
+        <InputLabel id={labelId} sx={selectStyle}>
+          {props.label}
+        </InputLabel>
         <Select labelId={labelId} sx={selectStyle} size="small" {...rest}>
           {entries.map((entry) => MenuEntry(entry))}
         </Select>
