@@ -115,7 +115,11 @@ const VideoControl = (props: Props) => {
 
   return (
     <div className={styles.VideoControl}>
-      {!haveVid && <DropZone onFileChange={handleVidSelection} />}
+      {!haveVid && (
+        <span className="addDropShadow">
+          <DropZone onFileChange={handleVidSelection} />
+        </span>
+      )}
       {haveVid && (
         <>
           <SelectionContainer

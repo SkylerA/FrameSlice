@@ -17,7 +17,8 @@
   --gap: .25rem;
   --header-bottom-margin: .5rem;
   --header-height: 4rem;
-  --header-height-total: calc(var(--header-height) + var(--header-bottom-margin))
+  --header-height-total: calc(var(--header-height) + var(--header-bottom-margin));
+  --shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.75);
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -199,4 +200,8 @@ video {
 /* box-shadow highlights get a bit clipped on the top and bottom due to overflow. Adding padding to max some space to render it. */
 .image-gallery {
   padding: 5px;
+}
+
+.addDropShadow {
+  box-shadow: var(--shadow);
 }
