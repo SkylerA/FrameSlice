@@ -78,31 +78,28 @@ function groupResults(cropResults: CropResult[]) {
 
   // loop through each group and add images to a div
   return keys.map((key) => (
-    <div className={dispStyle} key={key}>
-      {keys.length > 1 && <h3>{key}</h3>}
-      {resultMap[key].map((obj, idx) => {
-        const { url, classIdx } = obj;
-        if (vid) {
-          return (
-            <video
-              muted
-              playsInline
-              controls
-              autoPlay
-              loop
-              src={url}
-              key={url}
-            />
-          );
-        } else {
-          return (
-            <span className={styles.result} key={url}>
-              <img src={url} key={url} alt={`${url} result ${idx}`} />
-              {classIdx}
-            </span>
-          );
-        }
-      })}
+    <div className={styles.column} key={key}>
+      <h3>{key}</h3>
+      <span className={styles.row}>
+        {resultMap[key].map((obj, idx) => {
+          const { url, classIdx } = obj;
+          if (vid) {
+            return (
+              <video
+                muted
+                playsInline
+                controls
+                autoPlay
+                loop
+                src={url}
+                key={url}
+              />
+            );
+          } else {
+            return <img src={url} key={url} alt={`${url} result ${idx}`} />;
+          }
+        })}
+      </span>
     </div>
   ));
 }
