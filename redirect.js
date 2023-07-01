@@ -4,7 +4,6 @@ const redirects = {
   prod: [
     { source: "/gg", destination: "/", permanent: false },
     { source: "/inputs", destination: "/", permanent: false },
-    { source: "/label", destination: "/", permanent: false },
   ],
 };
 
