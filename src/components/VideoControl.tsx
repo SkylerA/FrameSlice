@@ -7,11 +7,7 @@ import useThrottledResizeObserver from "@/hooks/useThrottledResizeObserver";
 import styles from "@/styles/VideoControl.module.css";
 import type { DropEvent, FileRejection, FileWithPath } from "react-dropzone";
 import dynamic from "next/dynamic";
-
-const SelectionContainer = dynamic(() => import("./SelectionContainer"), {
-  ssr: false,
-  loading: () => <p>Loading...</p>,
-});
+import SelectionContainer from "./SelectionContainer";
 
 const MultiRangeSlider = dynamic(
   () => import("./multiRangeSlider/MultiRangeSlider"),
@@ -44,6 +40,7 @@ const rangeValToSec = (val: number) => Math.round((val / vidScale) * 100) / 100;
 const VideoControl = (props: Props) => {
   const { vidRef, hideRange } = props;
   const { width = 1, height = 1 } = useThrottledResizeObserver(500, vidRef);
+  const haveVid = props.vidSrc !== "";
 
   const vidRatio = useMemo(() => {
     return {
@@ -103,8 +100,6 @@ const VideoControl = (props: Props) => {
     props.setStartTime(adjustedMin);
   };
 
-  const haveVid = props.vidSrc !== "";
-
   function handleVidSelection(
     acceptedFiles: FileWithPath[],
     fileRejections: FileRejection[],
@@ -113,6 +108,8 @@ const VideoControl = (props: Props) => {
     loadVid(acceptedFiles[0]);
   }
 
+  const vidStyle = haveVid ? { display: "initial" } : { display: "none" };
+
   return (
     <div className={styles.VideoControl}>
       {!haveVid && (
@@ -120,38 +117,37 @@ const VideoControl = (props: Props) => {
           <DropZone onFileChange={handleVidSelection} />
         </span>
       )}
-      {haveVid && (
-        <>
-          <SelectionContainer
-            className={styles.test}
-            selections={props.crops as Box[]}
-            onSelectionChange={handleSelectionChange}
-            selecting={props.selecting}
-            showSelections
-            ratio={vidRatio}
-          >
-            <video
-              ref={props.vidRef}
-              src={props.vidSrc}
-              controls={!props.selecting}
-              playsInline
-              muted
+      <>
+        <SelectionContainer
+          className={styles.test}
+          selections={props.crops as Box[]}
+          onSelectionChange={handleSelectionChange}
+          selecting={props.selecting}
+          showSelections
+          ratio={vidRatio}
+        >
+          <video
+            ref={props.vidRef}
+            src={props.vidSrc}
+            controls={!props.selecting}
+            playsInline
+            style={vidStyle}
+            muted
+          />
+        </SelectionContainer>
+        {timeRangeMax > 0 && !hideRange && (
+          <div className={styles.RangeContainer}>
+            <span>Clip Range</span>
+            <MultiRangeSlider
+              min={0}
+              max={timeRangeMax}
+              step={0.01}
+              convertValCb={secToStr}
+              onChange={handleRangeChange}
             />
-          </SelectionContainer>
-          {timeRangeMax > 0 && !hideRange && (
-            <div className={styles.RangeContainer}>
-              <span>Clip Range</span>
-              <MultiRangeSlider
-                min={0}
-                max={timeRangeMax}
-                step={0.01}
-                convertValCb={secToStr}
-                onChange={handleRangeChange}
-              />
-            </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </>
     </div>
   );
 };

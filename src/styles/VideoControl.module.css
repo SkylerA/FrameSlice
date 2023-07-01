@@ -20,6 +20,6 @@
     text-align: center;
     inline-size: inherit;
     width: fit-content;
-    gap: 1rem;
-    padding-bottom: 1rem;
+    /* gap: 1rem;
+    padding-bottom: 1rem; */
 }
