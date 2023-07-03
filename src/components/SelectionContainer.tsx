@@ -45,6 +45,46 @@ function boxToCss(box: Box, ratio: Ratio, idx: number) {
   };
 }
 
+// Convert a click event to relative x,y coords and then pass them to the given callback
+const handleRelativeClick = (
+  e: React.MouseEvent<HTMLDivElement>,
+  cb: (x: number, y: number) => void
+) => {
+  const { x, y } = getRelativeMousePoint(e);
+  cb(x, y);
+};
+
+// Convert a touch event to relative x,y coords and then pass them to the given callback
+const handleRelativeTouch = (
+  e: React.TouchEvent<HTMLDivElement>,
+  cb: (x: number, y: number) => void
+) => {
+  const point = getRelativeTouchPoint(e);
+  if (point) {
+    const { x, y } = point;
+    cb(x, y);
+  }
+};
+
+// Return x,y coords relative to the clicked div
+const getRelativeMousePoint = (e: React.MouseEvent<HTMLDivElement>) => {
+  return {
+    x: e.clientX - e.currentTarget.getBoundingClientRect().left,
+    y: e.clientY - e.currentTarget.getBoundingClientRect().top,
+  };
+};
+
+// Return x,y coords relative to the touched div
+const getRelativeTouchPoint = (e: React.TouchEvent<HTMLDivElement>) => {
+  const touch = e.changedTouches[0];
+  return touch
+    ? {
+        x: touch.clientX - e.currentTarget.getBoundingClientRect().left,
+        y: touch.clientY - e.currentTarget.getBoundingClientRect().top,
+      }
+    : undefined;
+};
+
 let cropCount = 0;
 
 // TODO change to next component?
@@ -68,71 +108,56 @@ const SelectionContainer: NextComponentType<
     setDrawing(true);
     setEndX(-1);
     setEndY(-1);
-    setStartX(x - canvas.offsetLeft + document.documentElement.scrollLeft);
-    setStartY(y - canvas.offsetTop + document.documentElement.scrollTop);
+    setStartX(x);
+    setStartY(y);
   };
   const handleSelectMove = (x: number, y: number) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
-
-    setEndX(x - canvas.offsetLeft + document.documentElement.scrollLeft);
-    setEndY(y - canvas.offsetTop + document.documentElement.scrollTop);
+    setEndX(x);
+    setEndY(y);
   };
 
   const handleSelectEnd = (x: number, y: number) => {
     const canvas = mainDivRef.current;
     if (!canvas || !drawing) return;
 
-    const tempEndX =
-      x - canvas.offsetLeft + document.documentElement.scrollLeft;
-    const tempEndY = y - canvas.offsetTop + document.documentElement.scrollTop;
-
     setDrawing(false);
     const { w_ratio, h_ratio } = validRatio(props.ratio);
 
     const newBox = {
-      x: Math.ceil(Math.min(startX, tempEndX) / w_ratio),
-      y: Math.ceil(Math.min(startY, tempEndY) / h_ratio),
-      width: Math.ceil(Math.abs(tempEndX - startX) / w_ratio),
-      height: Math.ceil(Math.abs(tempEndY - startY) / h_ratio),
+      x: Math.ceil(Math.min(startX, x) / w_ratio),
+      y: Math.ceil(Math.min(startY, y) / h_ratio),
+      width: Math.ceil(Math.abs(x - startX) / w_ratio),
+      height: Math.ceil(Math.abs(y - startY) / h_ratio),
       name: `crop-${++cropCount}`,
     };
 
     props.onSelectionChange?.([...props.selections, newBox]);
   };
 
+  // Click Handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleSelectStart(e.clientX, e.clientY);
+    handleRelativeClick(e, handleSelectStart);
   };
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleSelectMove(e.clientX, e.clientY);
+    handleRelativeClick(e, handleSelectMove);
   };
-
   const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleSelectEnd(e.clientX, e.clientY);
+    handleRelativeClick(e, handleSelectEnd);
   };
 
+  // Touch Handlers
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    const touch = e.changedTouches[0];
-    if (touch) {
-      handleSelectStart(touch.clientX, touch.clientY);
-    }
+    handleRelativeTouch(e, handleSelectStart);
   };
-
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    const touch = e.changedTouches[0];
-    if (touch) {
-      handleSelectMove(touch.clientX, touch.clientY);
-    }
+    handleRelativeTouch(e, handleSelectMove);
+  };
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    handleRelativeTouch(e, handleSelectEnd);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const touch = e.changedTouches[0];
-    if (touch) {
-      handleSelectEnd(touch.clientX, touch.clientY);
-    }
-  };
   const eventHandlers = props?.selecting
     ? {
         onMouseDown: handleMouseDown,
