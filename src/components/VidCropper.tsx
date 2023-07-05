@@ -8,7 +8,6 @@ import useFFmpeg, {
 } from "@/hooks/useFFmpeg";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import Card from "@/components/Card";
-import type { Json } from "./CropFileLoader";
 import type { CropResult } from "./CropResults";
 import FrameControls, { FrameControlValues } from "./FrameControls";
 import CropControls from "./CropControls";
@@ -20,7 +19,7 @@ import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import styles from "@/styles/VidCropper.module.css";
 
 import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
-import type { ImgObj } from "@/utils/data";
+import type { ImgObj, Json } from "@/utils/data";
 import ScrollOnShow from "./ScrollOnShow";
 import dynamic from "next/dynamic";
 

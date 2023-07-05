@@ -38,3 +38,10 @@ next-env.d.ts
 TODO.md
 delMe_names
 .vscode/settings.json
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/test-results/
+/playwright-report/
+/playwright/.cache/
+*:Zone.Identifier

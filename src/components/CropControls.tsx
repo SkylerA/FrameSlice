@@ -2,11 +2,12 @@ import React from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { saveAs } from "file-saver";
 
-import CropFileLoader, { JsonCallback } from "./CropFileLoader";
+import CropFileLoader from "./CropFileLoader";
 import CropTable from "./CropTable";
 import { Crop } from "@/hooks/useFFmpeg";
 import styles from "@/styles/CropControls.module.css";
 import Button from "./Button";
+import type { JsonCallback } from "@/utils/data";
 
 type Props = {
   parseFramesFileJson: JsonCallback | undefined;

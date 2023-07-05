@@ -5,6 +5,21 @@ export type ImgObj = {
   classStr: string;
 };
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonObject
+  | JsonArray;
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonArray = JsonValue[];
+export type Json = JsonObject | JsonArray | null;
+
+export interface JsonCallback {
+  (json: Json): void;
+}
+
 // This creates a map of arrays that will auto generate the array the first time a bucket is accessed
 type AutoArrayMap<T> = { [key: string]: T[] };
 export function createAutoArrayMap<T>(): AutoArrayMap<T> {
@@ -71,3 +86,19 @@ export const filterAndIgnoreImgObjs = (
 // Helper function to keep typescript from complaining about object.blah references for json results that are typed as objects for now
 export const hasGet = <T,>(obj: object, field: string): T | undefined =>
   Object.hasOwn(obj, field) ? (obj[field as keyof typeof obj] as T) : undefined;
+
+export function loadJson(file: File, callback: JsonCallback | undefined) {
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      try {
+        const json = JSON.parse(event.target?.result as string) as unknown;
+        callback?.(json as JsonObject | JsonArray);
+      } catch (error) {
+        console.error("Error while loading JSON: ", error);
+        callback?.(null);
+      }
+    };
+    reader.readAsText(file);
+  }
+}
