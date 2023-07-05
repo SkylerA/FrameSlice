@@ -256,9 +256,12 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
     })();
   }, [JSON.stringify(inferResults)]);
 
-  function ffmpegProgressCb(progress: { ratio: number; time?: number }) {
-    handleFFmpegProgress(progress, videoRef, setParseProgress);
-  }
+  const ffmpegProgressCb = useCallback(
+    (progress: { ratio: number; time?: number }) => {
+      handleFFmpegProgress(progress, videoRef, setParseProgress);
+    },
+    [setParseProgress, videoRef]
+  );
 
   const no_op = async (files: string[], ffmpeg: FFmpeg) => {
     // freeUrls(cropResults); // Free previous crop img memory
@@ -268,46 +271,49 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
     }
   };
 
-  const inferCrops = async (files: string[], ffmpeg: FFmpeg) => {
-    console.time("loaded model");
-    // Model has been async loading since first paint so this should usually be available quickly
-    const { labels: newLabels } = await loadModelPromise;
-    labels = newLabels;
-    console.timeEnd("loaded model");
+  const inferCrops = useCallback(
+    async (files: string[], ffmpeg: FFmpeg) => {
+      console.time("loaded model");
+      // Model has been async loading since first paint so this should usually be available quickly
+      const { labels: newLabels } = await loadModelPromise;
+      labels = newLabels;
+      console.timeEnd("loaded model");
 
-    freeUrls(cropResults); // Free previous crop img memory
+      freeUrls(cropResults); // Free previous crop img memory
 
-    console.time("parsing/inference time");
-    const newResults: CropResult[] = [];
-    for (const file of files) {
-      // load next image
-      const data = ffmpeg.FS("readFile", file);
-      const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
-      const blob = new Blob([data.buffer], { type });
+      console.time("parsing/inference time");
+      const newResults: CropResult[] = [];
+      for (const file of files) {
+        // load next image
+        const data = ffmpeg.FS("readFile", file);
+        const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
+        const blob = new Blob([data.buffer], { type });
 
-      // Create a URL
-      const url = URL.createObjectURL(blob);
-      const { name, idx, ext } = getParseName(file) ?? "";
+        // Create a URL
+        const url = URL.createObjectURL(blob);
+        const { name, idx, ext } = getParseName(file) ?? "";
 
-      // clean up the ffmpeg file
-      ffmpeg.FS("unlink", file);
+        // clean up the ffmpeg file
+        ffmpeg.FS("unlink", file);
 
-      // Classify image
-      requestInferBlob(blob, name, idx);
-    }
+        // Classify image
+        requestInferBlob(blob, name, idx);
+      }
 
-    console.timeEnd("parsing time");
+      console.timeEnd("parsing time");
 
-    // TODO this can probably be remove
-    setCropResults(newResults);
+      // TODO this can probably be remove
+      setCropResults(newResults);
 
-    // Track how many requests we made for progress calculations
-    setInferReqCount(files.length);
+      // Track how many requests we made for progress calculations
+      setInferReqCount(files.length);
 
-    // // New timeline
-    // const temp = CropResultsToInputTimeline(newResults as inferResult[]);
-    // setNewTimelineResults(temp);
-  };
+      // // New timeline
+      // const temp = CropResultsToInputTimeline(newResults as inferResult[]);
+      // setNewTimelineResults(temp);
+    },
+    [getParseName, loadModelPromise, cropResults]
+  ); // TODO cropResults will most likely make this fire everytime
 
   const CropResultsToInputTimeline = (
     results: inferResult[],
