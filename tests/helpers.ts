@@ -29,7 +29,6 @@ export const confirmTableMatch = async (
   for (let col = colStart; col <= colStop; col++) {
     const input1 = await getCropTableInputVal(row1 + 1, col + 1, page);
     const input2 = await getCropTableInputVal(row2 + 1, col + 1, page);
-    console.log(await input1.inputValue(), await input2.inputValue());
     await expect(input1).not.toBeUndefined();
     await expect(input1).toHaveValue(await input2.inputValue());
   }

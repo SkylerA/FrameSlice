@@ -1,12 +1,4 @@
-import { Mouse } from "@mui/icons-material";
-import {
-  test,
-  expect,
-  FileChooser,
-  Page,
-  chromium,
-  firefox,
-} from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import {
   SingleCropBootstrap,
   TestPath,
@@ -71,7 +63,6 @@ test("Click/Drag on video creates a crop", async ({ page }) => {
 test("Crop dragging is properly offset when scrolled", async ({ page }) => {
   // Crops get converted from sizes dragged on a scaled video to their native resolution size
   // To help keep results consitent we'll fix the viewport size so the click location is always the same
-  console.log("PS");
   await page.setViewportSize({ width: 640, height: 480 });
   await page.goto("http://localhost:3000/");
   await loadVid("gg1-short.mp4", page);
@@ -165,3 +156,10 @@ test("Crop Load", async ({ page }) => {
   // Wait for all values to be checked
   await Promise.all(promises);
 });
+
+// test("Crop Output", async ({ page }) => {
+//   await page.goto("http://localhost:3000/");
+//   await loadVid("gg1-short.mp4", page);
+//   const file = "gg_L_full_row_0.json";
+//   await loadCrops(file, page);
+// });

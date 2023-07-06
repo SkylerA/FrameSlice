@@ -17,6 +17,7 @@ const ParseSettings = (props: Props) => {
 
   useEffect(() => {
     setParseSettings((prev) => ({ ...prev, game, side }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // one time init
 
   return (
