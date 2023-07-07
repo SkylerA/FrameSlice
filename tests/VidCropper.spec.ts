@@ -17,7 +17,7 @@ test.describe.configure({ mode: "parallel" });
 
 test.afterEach(async ({ page }) => {
   // This is required or playwright will fail to run any tests after the first
-  // page.close();
+  page.close();
 });
 
 test("Slider Range Updates on Vid Load", async ({ page }) => {
@@ -95,7 +95,8 @@ test("Crop dragging is properly offset when scrolled", async ({ page }) => {
   await page.mouse.wheel(0, offset);
   // Have to manually wait for playwright to scroll. It claims you can monitor scrollY, but this tip didn't work at all https://github.com/microsoft/playwright/issues/10002
   // TODO find a better way to programatically await the scroll. This will lead to flaky tets on laggy runs
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // TODO already had to increase delay because playwright is so unreliable, really need to programatically delay this
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Drag the same region after scrolling
   await page.mouse.move(startX, startY - offset);
@@ -157,9 +158,33 @@ test("Crop Load", async ({ page }) => {
   await Promise.all(promises);
 });
 
-// test("Crop Output", async ({ page }) => {
-//   await page.goto("http://localhost:3000/");
-//   await loadVid("gg1-short.mp4", page);
-//   const file = "gg_L_full_row_0.json";
-//   await loadCrops(file, page);
-// });
+test("Crop Output", async ({ page }) => {
+  await page.goto("http://localhost:3000/");
+
+  // Load video and Crops
+  await loadVid("gg1-short.mp4", page);
+  const file = "gg_L_full_row_0.json";
+  await loadCrops(file, page);
+
+  // Crop Vid
+  await page.getByRole("button", { name: "Crop Video" }).click();
+
+  const LabelCrops = page
+    .locator("div")
+    .filter({ hasText: /^Crop Results$/ })
+    .getByRole("button", { name: "Label Crops" });
+  const DlCrops = page.getByRole("button", { name: "Download Crops" });
+
+  // Check for expected crop results (this is specific to the cropFile we loaded).
+  const crops = page.getByText(
+    "gg_dir_L_0_0gg_dir_L_0_1gg_dir_L_0_2gg_dir_L_0_3"
+  );
+  await crops.waitFor(); // Playwright dies on the next line w/o this.
+  await expect(crops).toBeVisible();
+
+  // Ensure Download and Label Crops buttons are shown
+  await expect(DlCrops).toBeVisible();
+  await expect(LabelCrops).toBeVisible();
+
+  await expect(crops).toHaveScreenshot(`CropOutput.png`, { timeout: 10000 });
+});
