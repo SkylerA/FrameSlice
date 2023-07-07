@@ -1,3 +1,5 @@
+import saveAs from "file-saver";
+
 export type ObjArray = { [key: string]: any }[];
 export type ImgObj = {
   url: string;
@@ -101,4 +103,10 @@ export function loadJson(file: File, callback: JsonCallback | undefined) {
     };
     reader.readAsText(file);
   }
+}
+
+export function saveJson(obj: object, filename: string): void {
+  const jsonStr = JSON.stringify(obj);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  saveAs(blob, filename);
 }
