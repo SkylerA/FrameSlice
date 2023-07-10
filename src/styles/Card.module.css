@@ -11,7 +11,7 @@
 
     box-sizing: border-box;
     background: linear-gradient(var(--bg-color), var(--bg-color)),
-        linear-gradient(var(--gradient-dir), var(--track-color-left), var(--track-color-right));
+        linear-gradient(var(--gradient-dir), var(--color1), var(--color2));
     border: 4px solid transparent;
     background-repeat: no-repeat;
     background-origin: padding-box, border-box;

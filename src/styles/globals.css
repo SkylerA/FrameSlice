@@ -8,11 +8,14 @@
   --card-fg: var(--primary-fg);
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
-  --track-color-left: #007bfe;
-  --track-color-right: #e40492;
+  --color1: #007bfe;
+  --color2: #e40492;
+  --track-color-left: var(--color1);
+  --track-color-right: var(--color2);
+  --gradient-colors: var(--color1), var(--color2);
   --border-width: 2px;
-  --gradient-bg: linear-gradient(15deg, var(--track-color-left), var(--track-color-right));
-  --gradient-small-btn-bg: linear-gradient(25deg, var(--track-color-left), var(--track-color-right));
+  --gradient-bg: linear-gradient(15deg, var(--gradient-colors));
+  --gradient-small-btn-bg: linear-gradient(25deg, var(--gradient-colors));
   --scrollbar-size: 8px;
   --gap: .25rem;
   --header-bottom-margin: .5rem;
@@ -52,17 +55,52 @@ body {
 
 header {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   color: white;
   width: 100%;
   background: var(--dark-fill);
   margin-bottom: var(--header-bottom-margin);
+  padding: .5rem;
   /* Hardcoding header height so we can subtract it from viewport height */
   height: var(--header-height);
 }
 
-@media (max-width: 540px) {}
+header .nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+header .nav a {
+  color: inherit;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+  background-color: transparent;
+
+  /* move gradient shadow behind text */
+  transform-style: preserve-3d;
+}
+
+header .nav a:hover::before,
+header .nav a.active::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  background: var(--gradient-bg);
+  filter: blur(10px);
+  pointer-events: none;
+
+  /* move gradient shadow behind text */
+  transform: translate3d(0px, 0px, -1px);
+}
+
+@media (max-width: 500px) {
+  .header-tag {
+    display: none;
+  }
+}
 
 /* Next.Js adds it's own content wrapper so we need to set flex on this instead of body */
 #__next {

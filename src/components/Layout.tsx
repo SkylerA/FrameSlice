@@ -5,6 +5,8 @@ import Link from "@mui/material/Link";
 
 import { Manrope } from "next/font/google";
 import { ParseSettingsContextProvider } from "./contexts/parseSettingsContext";
+import classnames from "classnames";
+import { useRouter } from "next/router";
 //   Inter, Montserrat, Raleway, Quicksand, Manrope, Roboto, Lato, PT_Sans, Open_Sans
 const font = Manrope({ subsets: ["latin"] });
 
@@ -13,6 +15,8 @@ type Props = {
 };
 
 const Layout = (props: Props) => {
+  const router = useRouter();
+
   return (
     <>
       <Head>
@@ -25,19 +29,33 @@ const Layout = (props: Props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <header>
-        <h1 className={font.className}>FrameSlice</h1>
         <span>
-          <em>
-            <Link
-              rel="noopener"
-              target="_blank"
-              color="#fff"
-              href="https://ffmpegwasm.netlify.app/"
-            >
-              FFmpeg.wasm
-            </Link>
-            &nbsp;powered, in-browser video croppping
-          </em>
+          <h1 className={font.className}>FrameSlice</h1>
+          <span>
+            <em className="header-tag">
+              <Link
+                rel="noopener"
+                target="_blank"
+                color="#fff"
+                href="https://ffmpegwasm.netlify.app/"
+              >
+                FFmpeg.wasm
+              </Link>
+              &nbsp;powered, in-browser video croppping
+            </em>
+          </span>
+        </span>
+        <span className={classnames("nav", font.className)}>
+          <Link className={router.pathname === "/" ? "active" : ""} href="/">
+            Crop
+          </Link>
+          <Link
+            className={router.pathname === "/label" ? "active" : ""}
+            href="/label"
+          >
+            Label
+          </Link>
+          {/* <Link href="/about">About</Link> */}
         </span>
       </header>
       <main className={`${styles.main} ${font.className}`}>
