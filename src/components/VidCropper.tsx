@@ -53,7 +53,16 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   );
   const [cropImgObjs, setCropImgObjs] = useState<ImgObj[]>([]);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
+    useFFmpeg();
+
   const cropDisabled = vidSrc === "" || cropData.length < 1;
+  const showLabels = cropImgObjs.length > 0;
+  const showResults = !showLabels && (cropResults.length > 0 || loading);
+
   const editCropsCb = useCallback((crops: Crop[]) => {
     setCropData(crops);
   }, []);
@@ -62,99 +71,112 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     setSelecting(selecting);
   }, []);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const ffmpegProgressCb = useCallback(
+    (progress: { ratio: number; time?: number }) => {
+      handleFFmpegProgress(progress, videoRef, setParseProgress);
+    },
+    [videoRef]
+  );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
-    useFFmpeg();
+  const storeCropsNoInfer = useCallback(
+    async (files: string[], ffmpeg: FFmpeg) => {
+      freeUrls(cropResults); // Free previous crop img memory
 
-  function ffmpegProgressCb(progress: { ratio: number; time?: number }) {
-    handleFFmpegProgress(progress, videoRef, setParseProgress);
-  }
+      const newResults = [];
+      for (const file of files) {
+        // load next image
+        const data = ffmpeg.FS("readFile", file);
+        const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
+        const blob = new Blob([data.buffer], { type });
 
-  const storeCropsNoInfer = async (files: string[], ffmpeg: FFmpeg) => {
-    freeUrls(cropResults); // Free previous crop img memory
+        // Create a URL
+        const url = URL.createObjectURL(blob);
+        const { name, idx, ext } = getParseName(file) ?? "";
 
-    const newResults = [];
-    for (const file of files) {
-      // load next image
-      const data = ffmpeg.FS("readFile", file);
-      const type = mime.getType(file) ?? "image/png"; // determine file type or default to png
-      const blob = new Blob([data.buffer], { type });
+        // clean up the ffmpeg file
+        ffmpeg.FS("unlink", file);
 
-      // Create a URL
-      const url = URL.createObjectURL(blob);
-      const { name, idx, ext } = getParseName(file) ?? "";
+        newResults.push({ url, name, idx, ext });
 
-      // clean up the ffmpeg file
-      ffmpeg.FS("unlink", file);
-
-      newResults.push({ url, name, idx, ext });
-
-      // update the results in chunks to avoid some thrash
-      const imgChunks = 10;
-      if (newResults.length % imgChunks === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 0)); // Allow time for re-render
-        setCropResults(newResults.slice());
+        // update the results in chunks to avoid some thrash
+        const imgChunks = 10;
+        if (newResults.length % imgChunks === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 0)); // Allow time for re-render
+          setCropResults(newResults.slice());
+        }
       }
-    }
 
-    setLoading(false);
-    setCropResults(newResults);
-  };
+      setLoading(false);
+      setCropResults(newResults);
+    },
+    [cropResults, getParseName]
+  );
 
-  function parseFramesFileJson(json: Json) {
+  const parseFramesFileJson = useCallback((json: Json) => {
     if (json) {
       const frames = json as FramesParseObj[];
       const crops = frames.map((filter) => FramesParseObjToCrop(filter));
       setCropData(crops);
     }
-  }
-  // TODO  useCallback
-  function cropVidCb(frameVals: FrameControlValues): void {
-    const frameRate =
-      frameVals.frameRateMode === "custom"
-        ? { frameRate: frameVals.frameRate }
-        : {};
-    const limit = frameVals.limit > 0 ? { limit: frameVals.limit } : {};
+  }, []);
 
-    const details = {
-      ...frameRate,
+  const cropVidCb = useCallback(
+    (frameVals: FrameControlValues) => {
+      const frameRate =
+        frameVals.frameRateMode === "custom"
+          ? { frameRate: frameVals.frameRate }
+          : {};
+      const limit = frameVals.limit > 0 ? { limit: frameVals.limit } : {};
+
+      const details = {
+        ...frameRate,
+        startTime,
+        stopTime,
+        limitMode: frameVals.limitMode,
+        ...limit,
+      };
+      const file = videoRef.current?.src ?? "";
+      setCropImgObjs([]);
+      setCropResults([]);
+      setParseProgress(0);
+      setLoading(true);
+      setRunFrameVals(frameVals);
+      parseVideo(
+        file,
+        cropData,
+        details,
+        storeCropsNoInfer,
+        frameVals.outputMode,
+        ffmpegProgressCb
+      );
+    },
+    [
+      videoRef,
+      parseVideo,
+      ffmpegProgressCb,
+      cropData,
       startTime,
       stopTime,
-      limitMode: frameVals.limitMode,
-      ...limit,
-    };
-    const file = videoRef.current?.src ?? "";
-    setCropImgObjs([]);
-    setCropResults([]);
-    setParseProgress(0);
-    setLoading(true);
-    setRunFrameVals(frameVals);
-    parseVideo(
-      file,
-      cropData,
-      details,
       storeCropsNoInfer,
-      frameVals.outputMode,
-      ffmpegProgressCb
-    );
-  }
+    ]
+    // TODO cropData is an array which will probably cause this useCallback to update everytime
+  );
 
-  function handleVidSizeChange(width: number, height: number): void {
+  const handleVidSizeChange = useCallback((width: number, height: number) => {
     setVidW(width);
     setVidH(height);
-  }
+  }, []);
 
-  function showLabelEditor(): void {
-    const imgObjs = cropResults.map(
-      (result) => ({ url: result.url, classStr: result.name } as ImgObj)
-    );
-    setCropImgObjs([...imgObjs]);
-  }
-
-  const showLabels = cropImgObjs.length > 0;
-  const showResults = !showLabels && (cropResults.length > 0 || loading);
+  const showLabelEditor = useCallback(
+    () => {
+      const imgObjs = cropResults.map(
+        (result) => ({ url: result.url, classStr: result.name } as ImgObj)
+      );
+      setCropImgObjs([...imgObjs]);
+    },
+    [cropResults]
+    // TODO cropResults is an array which will probably cause this useCallback to update everytime
+  );
 
   return (
     <div className={styles.VidCropper}>
