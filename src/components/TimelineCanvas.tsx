@@ -40,7 +40,7 @@ const TimelineCanvas = (props: Props) => {
   // Pass any marker changes to useTimeline
   useEffect(() => {
     setMarkers(markers ?? []);
-  }, [markers]);
+  }, [markers, setMarkers]);
 
   // return the x coord of the mouse relative to the target in the given event
   const getX = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {

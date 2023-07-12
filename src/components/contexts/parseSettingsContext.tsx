@@ -3,7 +3,6 @@ import {
   ReactNode,
   SetStateAction,
   createContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -35,11 +34,6 @@ export const ParseSettingsContextProvider = (props: Props) => {
   const [parseSettings, setParseSettings] = useState<ParseSettings>(() => {
     return { game: "", side: "" };
   });
-
-  // TODO need a way to load/init this without server/client execution getting in the wayi'm not
-  //   useEffect(() => {
-  //     localStorage.setItem(ParseSettingsKey, JSON.stringify(parseSettings));
-  //   }, [parseSettings]);
 
   const memoizedState = useMemo(
     () => ({ parseSettings, setParseSettings }),

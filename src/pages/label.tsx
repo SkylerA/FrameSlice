@@ -1,6 +1,5 @@
-import GamepadInput from "@/components/GamepadInputs";
 import ClassLabelEditor from "@/components/Labeling/ClassLabelEditor";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 type Props = {};
 

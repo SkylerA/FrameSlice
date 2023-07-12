@@ -29,7 +29,7 @@ export const SvgMarkerCacheContextProvider = (props: Props) => {
     svgFns.map((svgFn) => {
       addSvgCreateFn(svgFn.key, svgFn.createFn);
     });
-  }, [svgFns]);
+  }, [svgFns, addSvgCreateFn]);
 
   return (
     <svgMarkerCacheContext.Provider

@@ -24,6 +24,7 @@ type Props = {
   setStartTime(time: number): void;
   vidSrc: string;
   setVidSrc(src: string): void;
+  fileSelectCb?(file: File): void;
   selecting: boolean;
   crops: Crop[];
   setCrops(crops: Crop[]): void;
@@ -38,29 +39,23 @@ const secToStr = (val: number) =>
 const rangeValToSec = (val: number) => Math.round((val / vidScale) * 100) / 100;
 
 const VideoControl = (props: Props) => {
-  const { vidRef, hideRange } = props;
+  const { vidRef, hideRange, vidDimensionsCb } = props;
   const { width = 1, height = 1 } = useThrottledResizeObserver(500, vidRef);
   const haveVid = props.vidSrc !== "";
 
+  const videoWidth = vidRef.current?.videoWidth;
+  const videoHeight = vidRef.current?.videoHeight;
+
   const vidRatio = useMemo(() => {
     return {
-      w_ratio: width / (vidRef.current?.videoWidth ?? width),
-      h_ratio: height / (vidRef.current?.videoHeight ?? height),
+      w_ratio: width / (videoWidth ?? width),
+      h_ratio: height / (videoHeight ?? height),
     };
-  }, [
-    width,
-    vidRef,
-    vidRef.current?.videoWidth,
-    height,
-    vidRef.current?.videoHeight,
-  ]);
+  }, [width, videoWidth, height, videoHeight]);
 
   useEffect(() => {
-    props.vidDimensionsCb?.(
-      vidRef.current?.videoWidth ?? 0,
-      vidRef.current?.videoHeight ?? 0
-    );
-  }, [vidRef.current?.videoWidth, vidRef.current?.videoHeight]);
+    vidDimensionsCb?.(videoWidth ?? 0, videoHeight ?? 0);
+  }, [videoWidth, videoHeight, vidDimensionsCb]);
 
   // Determine max value for time range
   const vidLength = vidRef.current?.duration ?? 0;
@@ -74,6 +69,7 @@ const VideoControl = (props: Props) => {
       props.setStartTime(-1);
       props.setStopTime(-1);
       props.setVidSrc(URL.createObjectURL(file));
+      props.fileSelectCb?.(file);
     }
   }
 
