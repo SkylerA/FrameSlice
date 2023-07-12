@@ -7,19 +7,18 @@ import React, {
 } from "react";
 import ImgGallery from "./ImgGallery";
 import LabelEdit, { LABEL_EDIT_IGNORE } from "./LabelEdit";
-import { saveAs } from "file-saver";
 import FolderLabelLoader from "./FolderLoader";
 import Button from "../Button";
 import FloatingLabelDropdown from "../FloatingLabelDropdown";
 
 import styles from "@/styles/ClassLabelEditor.module.css";
-import { fetchAndZipImg } from "@/utils/zip";
 import {
   classStrSort,
   filterAndIgnoreImgObjs,
   type ImgObj,
 } from "@/utils/data";
 import classnames from "classnames";
+import { downloadLabels } from "@/utils/models";
 
 // TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
 
@@ -40,40 +39,6 @@ const updateClasses = (
   // remove ignore entry, it will be added manually in the ui
   uniqueClasses.delete(LABEL_EDIT_IGNORE);
   setClasses(Array.from(uniqueClasses).sort());
-};
-
-// Create a zip of all crops in their respective label folders
-const downloadLabels = async (objs: ImgObj[]) => {
-  // TODO download prep can be very slow sometimes and page looks unresponsive. Need to investigate why this goes so slow sometimes or at least put up some progress indicator.
-  // TODO need to do research on what happens in a duplicate name is added to zip, probably need to add some checks to update numbers if there is a dupe. In particular if we allow label editing and 1.png of class S get's moved to P that also has 1.png etc etc
-  const JSZip = (await import("jszip")).default;
-
-  const zip = new JSZip();
-
-  // Add images to zip
-  const promises = objs.map((obj, idx) => {
-    const dir = obj.classStr;
-    const zipPath = `Labels/${dir}/${idx}.png`;
-    // TODO parse and use actual file extension from original image path
-
-    // Add the file to the zip
-    if (obj.file) {
-      // If we are working with local files, just save the file
-      zip.file(zipPath, obj.file);
-      return Promise.resolve();
-    } else {
-      // If we don't have a file, dl the img from the url
-      return fetchAndZipImg(obj.url, zip, zipPath);
-    }
-  });
-
-  // Wait for all images to dl and then zip everything
-  Promise.all(promises).then(() => {
-    zip.generateAsync({ type: "blob" }).then((blob) => {
-      // Prompt the user to save the file
-      saveAs(blob, "classify_labels.zip");
-    });
-  });
 };
 
 // Moved out of of compoenent while commented out, might need to update some variables before use
@@ -135,9 +100,8 @@ function ClassLabelEditor(props: Props) {
   }, []);
 
   useEffect(() => {
-    // TODO this has too many cyclical updates currently and fails to render on first show if results are already available
-    handleData(props.data ?? []);
-  }, [JSON.stringify(props.data)]);
+    handleData(data ?? []);
+  }, [JSON.stringify(data), handleData]);
 
   const showAll = selectedClass === ALL;
 
