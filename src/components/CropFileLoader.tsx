@@ -1,9 +1,6 @@
 import type { NextComponentType } from "next";
-import { useRef } from "react";
-import Button from "./Button";
 import { JsonCallback, loadJson } from "@/utils/data";
-
-// TODO This is probably not screenreader friendly
+import FileLoaderBtn from "./FileLoaderBtn";
 
 export type Props = {
   parseJsonCb?: JsonCallback;
@@ -19,30 +16,20 @@ function handleCropFileChange(
   }
 }
 
-const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
-  props: Props
-) => {
-  const cropFileRef = useRef<HTMLInputElement>(null);
-  const triggerFileInput = () => {
-    if (cropFileRef.current) {
-      cropFileRef.current.value = "";
-      cropFileRef.current.click();
-    }
-  };
-
+const CropFileLoader: NextComponentType<
+  Record<string, never>,
+  unknown,
+  Props
+> = (props: Props) => {
   return (
-    <div>
-      <Button onClick={triggerFileInput}>Load Crop File</Button>
-      <input
-        type="file"
-        accept="application/json"
-        ref={cropFileRef}
-        onChange={(e) => handleCropFileChange(e, props.parseJsonCb)}
-        multiple
-        hidden
-      />
-    </div>
+    <FileLoaderBtn
+      accept="application/json"
+      multiple
+      onChange={(e) => handleCropFileChange(e, props.parseJsonCb)}
+    >
+      Load Crop File
+    </FileLoaderBtn>
   );
 };
 
-export default VidCropper;
+export default CropFileLoader;
