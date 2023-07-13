@@ -10,6 +10,8 @@ import {
 import fs from "fs";
 import { JsonObject } from "@/utils/data";
 
+// TODO see about dealing with playwright flakiness https://hackernoon.com/how-to-fix-flaky-end-to-end-tests-with-playwright-and-reflow
+
 // NOTE: Playwright uses chromium without codecs so this has to be run in Firefox for video loading to work
 
 // Playwright seems to ignore this if the `Show Browser` option is ticked
@@ -188,3 +190,5 @@ test("Crop Output", async ({ page }) => {
 
   await expect(crops).toHaveScreenshot(`CropOutput.png`, { timeout: 10000 });
 });
+
+// TODO add a test for label editor and download labels
