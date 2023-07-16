@@ -5,20 +5,9 @@
     --tick-label-height: .85rem;
     --timeline-color: var(--tick-color);
     --timeline-height: 1rem;
-    --border-color: #FFF;
-    --bg-color: #000;
 
     /* This gets updated in the component */
     --frameW: 1rem;
-}
-
-.Timeline .Grid {
-    margin: 1rem 1rem;
-    background: var(--bg-color);
-    border-radius: .5rem;
-    outline: 1px solid var(--border-color);
-    max-width: fit-content;
-    padding-bottom: var(--scrollbar-size);
 }
 
 .Timeline .timeTick {

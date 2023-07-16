@@ -1,3 +1,4 @@
+import { TimelineFrame } from "@/components/Timeline";
 import { ObjArray } from "./data";
 
 export type FrameCb = (result: FrameResult) => void;
@@ -132,19 +133,17 @@ export function markHeldButtons(
   });
 }
 
-export const frameResultsToObjArray = (
+export const frameResultsToTimelineFrames = (
   frames: FrameResult[],
   labelLookupCb: LabelLookupCb
-): ObjArray => {
+) => {
   // Wrap the passed lookup cb so we can call ButtonCheck first
   function BtnLookup(btnIdx: number) {
     return labelLookupCb(ButtonCheck(btnIdx));
   }
-  const retArr = [] as ObjArray;
+  const retArr = [] as TimelineFrame[];
   frames.map(({ frameIdx, buttons }) => {
-    retArr[frameIdx] = { btns: buttons?.map(BtnLookup) ?? [] } as {
-      [key: string]: any;
-    };
+    retArr[frameIdx] = { btns: buttons?.map(BtnLookup) ?? [] };
   });
   return retArr;
 };

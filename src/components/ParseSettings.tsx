@@ -5,15 +5,18 @@ import styles from "@/styles/ParseSettings.module.css";
 import { ParseSettingsContext } from "./contexts/parseSettingsContext";
 import { ParseSettings } from "@/utils/parse";
 
-type Props = {};
+type Props = {
+  children?: React.ReactNode;
+};
 
 const games = ["GG Strive", "SF6"];
 const sides = ["P1", "P2", "Both"];
 
 const ParseSettings = (props: Props) => {
+  const { children, ...rest } = props;
   const { parseSettings, setParseSettings } = useContext(ParseSettingsContext);
-  const game = parseSettings.game !== "" ? parseSettings.game : games[0];
-  const side = parseSettings.side !== "" ? parseSettings.side : sides[0];
+  const { game } = parseSettings;
+  const side = parseSettings.side;
 
   useEffect(() => {
     setParseSettings((prev) => ({ ...prev, game, side }));
@@ -42,6 +45,7 @@ const ParseSettings = (props: Props) => {
         }}
         entries={sides}
       />
+      {children}
     </div>
   );
 };

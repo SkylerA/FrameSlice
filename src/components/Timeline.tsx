@@ -1,12 +1,11 @@
-import React, { CSSProperties, useMemo } from "react";
+import React, { CSSProperties, useEffect, useMemo, useState } from "react";
 import { FixedSizeGrid } from "react-window";
 import { useDevicePixelRatio } from "use-device-pixel-ratio";
 import styles from "@/styles/Timeline.module.css";
-import { ObjArray } from "@/utils/data";
 
 export type BtnColProps = {
   colIdx: number;
-  frames: ObjArray;
+  frames: TimelineFrame[];
   noDupes: boolean;
 };
 
@@ -16,7 +15,7 @@ type BtnColumnCb = ({
   noDupes,
 }: {
   colIdx: number;
-  frames: ObjArray;
+  frames: TimelineFrame[];
   noDupes: boolean;
 }) => React.JSX.Element;
 
@@ -30,8 +29,10 @@ export type CellCbType = ({
   style: CSSProperties;
 }) => React.JSX.Element;
 
+export type TimelineFrame = { btns: string[] };
+
 export type TimelineProps = {
-  frames: ObjArray;
+  frames: TimelineFrame[];
   frameW: number; // FixedSizeGrid requires fixed widths
   containerW: number; // Currently need window size to grow object to fit space
   btnColumnCb?: BtnColumnCb; // return content for default cell
@@ -42,7 +43,7 @@ export type TimelineProps = {
   gridRef?: React.LegacyRef<FixedSizeGrid<any>>;
 };
 
-function getMaxBtnRows(array: ObjArray) {
+function getMaxBtnRows(array: TimelineFrame[]) {
   function maxBtnCount(maxRows: number, currCol: { [key: string]: any }) {
     const count = currCol["btns"]?.length ?? 0;
     return Math.max(count, maxRows);
@@ -81,11 +82,20 @@ const Timeline = (props: TimelineProps) => {
     showDupes,
     gridRef,
   } = props;
-  const pixelRatio = useDevicePixelRatio({ maxDpr: +Infinity, round: false });
+  const serverRun = typeof window === "undefined";
   const remToPixels = 16;
   const rowCount = useMemo(() => {
     return getMaxBtnRows(frames);
   }, [frames.length]);
+
+  // Rather pointless extra steps to fix a warning about the Fixed Grid having different values between server/client
+  // The timeline renders of the client pixel ratio so server value is pointless to begin with
+  const deviceRatio = useDevicePixelRatio({ maxDpr: +Infinity, round: false });
+  const [pixelRatio, setPixelRatio] = useState<number>(1);
+  useEffect(() => {
+    // set pixelRatio only on client side
+    setPixelRatio(deviceRatio);
+  }, [deviceRatio]);
 
   const newTimelineHeight = Math.max(
     (rowCount + 1) * pixelRatio * remToPixels,

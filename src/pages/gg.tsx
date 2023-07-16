@@ -34,10 +34,10 @@ import GamepadInput from "../components/GamepadInputs";
 import ParseSettings from "@/components/ParseSettings";
 import Card from "@/components/Card";
 import { ParseSettingsContext } from "@/components/contexts/parseSettingsContext";
+import { TimelineFrame } from "@/components/Timeline";
+import useComputedFontSize from "@/hooks/useComputedFontSize";
 
 type Props = {};
-
-type ObjArray = { [key: string]: any }[];
 
 let crops: Crop[] = [];
 
@@ -164,6 +164,40 @@ const demo = [
   { classIdx: 32, name: "gg_btn_L_0_3", idx: 120 },
 ];
 
+export const CropResultsToTimelineFrames = (
+  results: inferResult[],
+  labels: string[],
+  btnPrefix: string
+) => {
+  if (!btnPrefix || btnPrefix === "")
+    console.log("CropResultsToTimelineFrames Error: no btnPrefix provided");
+  // TODO add error/warning if labels is empty as it will result in undefined btn arrays
+  return results?.reduce((grouped, curr) => {
+    // Add an empty object to the entry if one doesn't exist
+    grouped[curr.idx] = grouped[curr.idx] ?? {};
+    // get a reference to the stored object so we don't have to update the array after object changes
+    const obj = grouped[curr.idx];
+
+    // Currently only parsing for gg buttons
+    // This assumes a name format of ${GG_BTN_PREFIX}${side}_${row}_${col}
+    if (curr.name?.startsWith(btnPrefix)) {
+      const [side, row, col] = curr.name.replace(btnPrefix, "").split("_");
+      // side and row aren't currently used
+
+      // Create a btns entry if one doesn't exist
+      obj["btns"] = obj["btns"] ?? ([] as string[]);
+      const btns = obj["btns"];
+      const label = labels[curr.classIdx ?? -1];
+
+      // Skip storing invalid vals
+      if (label !== "invalid") {
+        btns[Number(col)] = label;
+      }
+    }
+    return grouped;
+  }, [] as TimelineFrame[]);
+};
+
 const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   props: Props
 ) => {
@@ -175,8 +209,7 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   const [parseProgress, setParseProgress] = useState<number>(0);
   const [cropResults, setCropResults] = useState<CropResult[]>([]);
   // const [newTimelineResults, setNewTimelineResults] = useState<ObjArray>([]);
-  const [results, setResults] = useState<ObjArray[]>([[]]);
-  const [frameW, setFrameW] = useState<number>(0);
+  const [results, setResults] = useState<TimelineFrame[][]>([[]]);
   const [inferReqCount, setInferReqCount] = useState<number>(0);
   const inferWorkerRef = useRef<Worker>();
   const [clipIdx, setClipIdx] = useState<number>(-1);
@@ -189,6 +222,8 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
     useFFmpeg();
 
   const { parseSettings, setParseSettings } = useContext(ParseSettingsContext);
+
+  const frameW = useComputedFontSize() * 1.25;
 
   // Cause the model to start async loading
   const loadModelPromise = useMemo(() => loadModel(), []);
@@ -229,13 +264,10 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
   }, [vidSrc]);
 
   useEffect(() => {
-    setFrameW(
-      1.25 * parseFloat(getComputedStyle(document.documentElement).fontSize)
-    );
-  }, []);
-
-  useEffect(() => {
-    (async () => {
+    const func = async (
+      inferResults: inferResult[],
+      parseSettings: ParseSettings
+    ) => {
       if (inferResults.length > 0) {
         const prefix = GetBtnPrefix(parseSettings) ?? "";
         // TODO improve error handling across the board
@@ -244,7 +276,7 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
         const lbls = labels.length > 0 ? labels : await loadLabels();
 
         // New timeline
-        const temp = CropResultsToInputTimeline(inferResults, lbls, prefix);
+        const temp = CropResultsToTimelineFrames(inferResults, lbls, prefix);
         // setNewTimelineResults(temp);
         // TODO need to consider if shallow copy will causes issues here
         setResults((prev) => {
@@ -253,7 +285,9 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
         });
         // setInferResults([]);
       }
-    })();
+    };
+
+    func(inferResults, parseSettings);
   }, [JSON.stringify(inferResults)]);
 
   const ffmpegProgressCb = useCallback(
@@ -309,45 +343,11 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
       setInferReqCount(files.length);
 
       // // New timeline
-      // const temp = CropResultsToInputTimeline(newResults as inferResult[]);
+      // const temp = CropResultsToTimelineFrames(newResults as inferResult[]);
       // setNewTimelineResults(temp);
     },
     [getParseName, loadModelPromise, cropResults]
   ); // TODO cropResults will most likely make this fire everytime
-
-  const CropResultsToInputTimeline = (
-    results: inferResult[],
-    labels: string[],
-    btnPrefix: string
-  ) => {
-    if (!btnPrefix || btnPrefix === "")
-      console.log("CropResultsToInputTimeline Error: no btnPrefix provided");
-    // TODO add error/warning if labels is empty as it will result in undefined btn arrays
-    return results.reduce((grouped, curr) => {
-      // Add an empty object to the entry if one doesn't exist
-      grouped[curr.idx] = grouped[curr.idx] ?? {};
-      // get a reference to the stored object so we don't have to update the array after object changes
-      const obj = grouped[curr.idx];
-
-      // Currently only parsing for gg buttons
-      // This assumes a name format of ${GG_BTN_PREFIX}${side}_${row}_${col}
-      if (curr.name?.startsWith(btnPrefix)) {
-        const [side, row, col] = curr.name.replace(btnPrefix, "").split("_");
-        // side and row aren't currently used
-
-        // Create a btns entry if one doesn't exist
-        obj["btns"] = obj["btns"] ?? ([] as string[]);
-        const btns = obj["btns"];
-        const label = labels[curr.classIdx ?? -1];
-
-        // Skip storing invalid vals
-        if (label !== "invalid") {
-          btns[Number(col)] = label;
-        }
-      }
-      return grouped;
-    }, [] as { [key: string]: any }[]);
-  };
 
   const CropResultToMarker = (result: CropResult): Marker | undefined => {
     const label = labels[result.classIdx ?? -1];
@@ -417,7 +417,7 @@ const GG: NextComponentType<Record<string, never>, unknown, Props> = (
       </Card>
 
       {results.map((result, idx) => (
-        <div key={idx} className={styles.Grid}>
+        <div key={idx} className="timelineContainer">
           {result.length > 0 && (
             <GG_Timeline
               containerW={winSize.width}

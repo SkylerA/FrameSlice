@@ -21,9 +21,11 @@ export type FramesParseObj = {
   height?: string;
 };
 
+export const ParseGames = ["GG Strive", "SF6"] as const;
+export const ParseSides = ["P1", "P2", "Both"] as const;
 export type ParseSettings = {
-  game: string;
-  side: string;
+  game: (typeof ParseGames)[number];
+  side: (typeof ParseSides)[number];
 };
 
 export type GameInfo = {

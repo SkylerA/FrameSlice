@@ -1,18 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import GG_Timeline from "@/components/GG_Timeline";
 import { useWindowSize } from "usehooks-ts";
-import styles from "@/styles/inputs.module.css";
 import type { FixedSizeGrid } from "react-window";
 import Tooltip from "@mui/material/Tooltip";
 import {
   FrameResult,
   LabelLookupCb,
   LookupInfo,
-  frameResultsToObjArray,
+  frameResultsToTimelineFrames,
 } from "@/utils/gamepad";
 import InputReader from "@/components/InputReader";
-import { ObjArray } from "@/utils/data";
 import Button from "./Button";
+import useComputedFontSize from "@/hooks/useComputedFontSize";
+import { TimelineFrame } from "./Timeline";
 
 // TODO this will eventually need to support custom mappings
 
@@ -104,23 +104,18 @@ const resetFrameIdxs = (frames: FrameResult[]) => {
 const GamepadInput = (props: Props) => {
   const { lookupCb } = props;
   const winSize = useWindowSize();
-  const [frameW, setFrameW] = useState<number>(0);
-  const [results, setResults] = useState<ObjArray[]>([[]]);
-  const [currInputs, setCurrInputs] = useState<ObjArray>([]);
+  const [results, setResults] = useState<TimelineFrame[][]>([]);
+  const [currInputs, setCurrInputs] = useState<TimelineFrame[]>([]);
   const previewGridRef = useRef<FixedSizeGrid<any>>(null);
   const [enabled, setEnabled] = useState<boolean>(false);
   const [controllerConnected, setControllerConnected] =
     useState<boolean>(false);
 
+  const frameW = useComputedFontSize() * 1.25;
+
   // Default to xbox inputs if no lookup is provided
   // const lookup = lookupCb ?? XBOX_btnLookup;
   const lookup = lookupCb ?? GG_btnLookup;
-
-  useEffect(() => {
-    setFrameW(
-      1.25 * parseFloat(getComputedStyle(document.documentElement).fontSize)
-    );
-  }, []);
 
   let tempResults: FrameResult[] = [];
   let emptyCount = 0;
@@ -134,7 +129,7 @@ const GamepadInput = (props: Props) => {
       tempResults = [];
       inputReceived = false;
       setCurrInputs(
-        frameResultsToObjArray(resetFrameIdxs(tempResults), lookup)
+        frameResultsToTimelineFrames(resetFrameIdxs(tempResults), lookup)
       );
     };
 
@@ -155,7 +150,7 @@ const GamepadInput = (props: Props) => {
       if (emptyCount > 60) {
         // Store current inputs as a new clip
         // a lot happening in this line, converting to ObjArray, setting frameIdx values realtive to 0 and first input of current chunk, and finally converting btn display values
-        const clip = frameResultsToObjArray(
+        const clip = frameResultsToTimelineFrames(
           resetFrameIdxs([...tempResults]),
           lookup
         );
@@ -168,7 +163,7 @@ const GamepadInput = (props: Props) => {
     }
 
     if (inputReceived) {
-      const inputs = frameResultsToObjArray(
+      const inputs = frameResultsToTimelineFrames(
         resetFrameIdxs(tempResults),
         lookup
       );
@@ -178,7 +173,7 @@ const GamepadInput = (props: Props) => {
     }
   }
   return (
-    <div className={styles.Inputs}>
+    <div>
       {!enabled && (
         <Tooltip arrow title="Use a connected gamepad to practice inputs">
           <Button onClick={() => setEnabled((prev) => !prev)}>Practice</Button>
@@ -195,7 +190,7 @@ const GamepadInput = (props: Props) => {
           {controllerConnected && <span>Controller Connected</span>}
           {!controllerConnected && <span>Please connect a controller</span>}
           {currInputs.length > 0 && (
-            <div className={styles.Grid}>
+            <div className="timelineContainer">
               <GG_Timeline
                 gridRef={previewGridRef}
                 containerW={winSize.width}
@@ -209,7 +204,7 @@ const GamepadInput = (props: Props) => {
           )}
 
           {results.map((result, idx) => (
-            <div key={idx} className={styles.Grid}>
+            <div key={idx}>
               {result.length > 0 && (
                 <GG_Timeline
                   containerW={winSize.width}

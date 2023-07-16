@@ -12,19 +12,6 @@
     align-items: center;
 }
 
-.gg .Grid {
-    margin: 1rem 1rem;
-    background: #000;
-    border-radius: .5rem;
-    outline: 1px solid white;
-    max-width: fit-content;
-    padding-bottom: var(--scrollbar-size);
-}
-
-.gg .Grid:empty {
-    outline: 0px solid transparent;
-}
-
 .gg .progress {
     margin: 0rem 1rem;
     /* padding-bottom: .5rem; */

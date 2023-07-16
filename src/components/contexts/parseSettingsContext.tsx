@@ -1,3 +1,4 @@
+import { ParseGames, ParseSettings, ParseSides } from "@/utils/parse";
 import {
   Dispatch,
   ReactNode,
@@ -11,18 +12,13 @@ type Props = {
   children: ReactNode;
 };
 
-type ParseSettings = {
-  game: string;
-  side: string;
-};
-
 type ContextValue = {
   parseSettings: ParseSettings;
   setParseSettings: Dispatch<SetStateAction<ParseSettings>>;
 };
 
 const defaultValue: ContextValue = {
-  parseSettings: { game: "", side: "" },
+  parseSettings: { game: ParseGames[0], side: ParseSides[0] },
   setParseSettings: () => {},
 };
 
@@ -32,7 +28,7 @@ export const ParseSettingsContext = createContext<ContextValue>(defaultValue);
 
 export const ParseSettingsContextProvider = (props: Props) => {
   const [parseSettings, setParseSettings] = useState<ParseSettings>(() => {
-    return { game: "", side: "" };
+    return defaultValue.parseSettings;
   });
 
   const memoizedState = useMemo(

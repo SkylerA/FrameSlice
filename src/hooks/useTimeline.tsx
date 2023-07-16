@@ -1,6 +1,7 @@
 import { useMarkerCache } from "@/components/inputTimeline/SvgMarkerCacheContext";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDevicePixelRatio } from "use-device-pixel-ratio";
+import useComputedFontSize from "./useComputedFontSize";
 
 export type Marker = {
   frame: number;
@@ -32,13 +33,12 @@ export function useTimeline() {
     0
   );
 
+  const frameW = useComputedFontSize() * 1.25;
+
   // Main Draw useEffect
   useEffect(() => {
     // Define drawing sizes
-    // Had to move this into a useEffect because Next.js was trying to run the code server-side
-    frame_w =
-      1.25 * parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const canvas_h = maxRows * frame_w; // currently assuming markers w/h is uniform
+    const canvas_h = maxRows * frameW; // currently assuming markers w/h is uniform
 
     const ctx = canvasRef.current?.getContext("2d");
     const parent = parentRef.current;
