@@ -42,7 +42,7 @@ const GGBtnColumn = ({ colIdx, frames, noDupes }: BtnColProps) => {
       {show &&
         btns.map((btnStr: string, idx: number) => (
           <div
-            key={btnStr ?? idx}
+            key={`${idx}_${btnStr}`}
             className={`${styles.btn} ${styles[btnStr]}`}
           >
             {convertLabel(btnStr)?.replace("_h", "")}
