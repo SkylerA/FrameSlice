@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { NextComponentType } from "next";
 import useFFmpeg, {
   Crop,
@@ -53,15 +53,24 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   );
   const [cropImgObjs, setCropImgObjs] = useState<ImgObj[]>([]);
 
+  const [loadFFmpeg, setLoadFFmpeg] = useState<boolean>(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ffmpeg, ffmpegReady, parseVideo, getParseName, getFps, getRunDetails] =
-    useFFmpeg();
+    useFFmpeg(loadFFmpeg);
 
   const cropDisabled = vidSrc === "" || cropData.length < 1;
   const showLabels = cropImgObjs.length > 0;
   const showResults = !showLabels && (cropResults.length > 0 || loading);
+
+  useEffect(() => {
+    // Hold off loading ffmpeg until a user is actually loading a video
+    if (!ffmpegReady && vidSrc !== "") {
+      setLoadFFmpeg(true);
+    }
+  }, [vidSrc, ffmpegReady]);
 
   const editCropsCb = useCallback((crops: Crop[]) => {
     setCropData(crops);

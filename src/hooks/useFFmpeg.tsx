@@ -221,7 +221,7 @@ const log_getFps = ({ type, message }: { type: string; message: string }) => {
 // TODO this probably results in duplicate instances of ffmpeg currently if multipole components call the useHook
 
 let ffmpegLoading = false; // Keep useFFmpeg from trying to load itself multiple times at start
-export default function useFFmpeg() {
+export default function useFFmpeg(loadFFmpeg: boolean = true) {
   const ffmpeg = useMemo(() => createFFmpeg(ffmpeg_init), []);
   const [ffmpegReady, setFFmpegReady] = useState(false);
 
@@ -247,7 +247,7 @@ export default function useFFmpeg() {
     }
   };
 
-  if (!ffmpegReady && typeof window != "undefined") {
+  if (!ffmpegReady && loadFFmpeg && typeof window != "undefined") {
     // Start loading ffmpeg on the client side
     load();
   }
