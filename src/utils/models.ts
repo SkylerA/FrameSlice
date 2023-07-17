@@ -20,6 +20,8 @@ export const loadModel = async () => {
   }
 };
 
+// TODO need to make lookup system for diff games
+// currently only returns GG_st labels
 export const loadLabels = async () => {
   const json = await import("@/model_files/labels.json");
   return json.labels;
