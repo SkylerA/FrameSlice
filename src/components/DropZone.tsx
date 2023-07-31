@@ -15,7 +15,7 @@ const baseStyle = {
   outline: "none",
   cursor: "pointer",
   height: "10rem",
-  width: "20rem",
+  width: "calc(var(--card-min-w) - (2*var(--border-width)));",
 };
 
 type Props = {
