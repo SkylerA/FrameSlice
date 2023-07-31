@@ -92,10 +92,8 @@ header .nav a {
   text-transform: uppercase;
   text-decoration: none;
   position: relative;
-  background-color: transparent;
-
-  /* move gradient shadow behind text */
-  transform-style: preserve-3d;
+  background-color: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(10px);
 }
 
 header .nav a:hover::before,
@@ -106,9 +104,7 @@ header .nav a.active::before {
   background: var(--gradient-bg);
   filter: blur(10px);
   pointer-events: none;
-
-  /* move gradient shadow behind text */
-  transform: translate3d(0px, 0px, -1px);
+  z-index: -1;
 }
 
 @media (max-width: 500px) {
