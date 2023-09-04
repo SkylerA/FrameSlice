@@ -20,12 +20,8 @@ import {
 import classnames from "classnames";
 import { downloadLabels } from "@/utils/models";
 
-// TODO there might be a bug when going between local files and filter results. Might just need to clean imgObjs on switch
-
-// TODO Feature: Add some form of label for class sections
 type Props = ComponentProps<"div"> & {
   data?: ImgObj[];
-  onUpload?: (success: boolean, error?: string) => void;
   showLoadFolder?: boolean;
 };
 
@@ -41,48 +37,14 @@ const updateClasses = (
   setClasses(Array.from(uniqueClasses).sort());
 };
 
-// Moved out of of compoenent while commented out, might need to update some variables before use
-// const uploadLabels = () => {
-//   setIsUploading(true);
-//   const payload = {
-//     modelName: "gg_classify_mobilenet_v3",
-//     imgObjs: imgObjs,
-//   };
-//   console.log(payload);
-
-//   const server = process.env.REACT_APP_SERVER_URL;
-//   const url = server + "AddLabels";
-
-//   fetch(url, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(payload),
-//   })
-//     .then(fetchGetJson)
-//     .then((data: object) => {
-//       const success = hasGet<boolean>(data, "success") ?? false;
-//       if (success) {
-//         props.onUpload?.(success);
-//       } else {
-//         const error = hasGet<string>(data, "error") ?? "";
-//         props.onUpload?.(success, error);
-//       }
-//     })
-//     .catch((error) => {
-//       props.onUpload?.(false, error);
-//     })
-//     .finally(() => setIsUploading(false));
-// };
-
 function ClassLabelEditor(props: Props) {
-  const { data, onUpload, showLoadFolder, ...rest } = props;
+  const { data, showLoadFolder, ...rest } = props;
 
   const [imgObjs, setImgObjs] = useState<ImgObj[]>([]);
   const [imgUrls, setImgUrls] = useState<string[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState("(All)");
   const [selectedImgIdxs, setSelectedImgIdxs] = useState<number[]>([]);
-  // const [isUploading, setIsUploading] = useState<boolean>(false);
   const ALL = "(All)";
 
   // Handle user loaded image data
@@ -137,7 +99,6 @@ function ClassLabelEditor(props: Props) {
         // clear selection
         setSelectedImgIdxs([]);
       } else {
-        // TODO see about removing imgObjs deps by moving this logic inside a setImgObjs( (prev) => ) call
         const updateObjs = [...imgObjs];
         // selectedImgIdxs is relative to imgUrls which is a subset of imgObjs
         // need to use imgUrls to find original imgObj to update
@@ -151,7 +112,7 @@ function ClassLabelEditor(props: Props) {
         updateImgFilter(selectedClass, newObjs);
       }
     },
-    [selectedClass, JSON.stringify(imgObjs), JSON.stringify(selectedImgIdxs)] // TODO imgObjs and selectedImgIdxs are arrays, might want to do a diff dependency style?
+    [selectedClass, JSON.stringify(imgObjs), JSON.stringify(selectedImgIdxs)]
   );
 
   const getSelectedImgClass = (imgUrlIdx: number) => {
@@ -205,10 +166,6 @@ function ClassLabelEditor(props: Props) {
         {urls.length > 0 && (
           <Button onClick={download}>Download Label Dirs</Button>
         )}
-        {/* TODO When re-enabling upload, make sure to use download's approach to using the filtered values so we don't include ignore etc */}
-        {/* <button className="small" onClick={uploadLabels}>
-          Add Labels to Model {isUploading && <span>🔃</span>}
-        </button> */}
       </div>
     </div>
   );
