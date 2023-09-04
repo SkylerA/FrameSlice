@@ -65,7 +65,6 @@ function ImgGallery(props: Props) {
     }
   };
 
-  // TODO If a single image is shown then the highlight goes to the top/bottom of the entire component.
   return (
     <div
       className={classnames("image-gallery", props.className)}

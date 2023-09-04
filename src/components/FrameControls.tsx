@@ -7,11 +7,7 @@ import { NextComponentType } from "next/types";
 import { FrameRateMode, LimitMode, OutputMode } from "@/hooks/useFFmpeg";
 
 import styles from "@/styles/FrameControls.module.css";
-import {
-  selectStyle,
-  textFieldStyle,
-  toggleStyle,
-} from "@/styles/MuiStyleObjs";
+import { textFieldStyle, toggleStyle } from "@/styles/MuiStyleObjs";
 import Dropdown from "./Dropdown";
 import Button from "./Button";
 
