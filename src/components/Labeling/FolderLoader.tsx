@@ -29,7 +29,6 @@ function FolderLabelLoader(props: FolderLoaderProps) {
   const handleSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const subFolderFiles = Array.from(event.target.files ?? []);
 
-    // TODO Add support for other image types
     const foundFiles = subFolderFiles.filter((file) =>
       file.type.startsWith("image")
     );
