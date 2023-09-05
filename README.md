@@ -1,31 +1,26 @@
 # FrameSlice
 
-Client side, in-browser cropping and inference.
+**Live Demo [www.FrameSlice.com](https://www.frameslice.com/)**
 
-## Preparing a model
+## About
 
-- Currently using /code/FramesServer/ml_models/gg_classify_mobilenet_v3
-  - cd /code/FramesServer/python
-  - `python3 make_mobilenetv3_model.py` (check file and make sure that Make and Convert are set to true)
-- (converter requires python env so load FrameServer's venv in need be)
-- cd code/FramesServer/ml_models
-- convert to graph model with the following:
+This is a proof of concept site to demonstrate using ffmpeg.wasm to crop videos in-browser, removing the need to upload a video to a server to manipulate it.
 
-  ```bash
-  tensorflowjs_converter --input_format=tf_saved_model ./gg_classify_mobilenet_v3 ./tfjs_graph_model
-  ```
+## You Can
 
-- place output in public
+- Crop images/gifs/video clips based off selected portions of video
+- Specify time range or frame count to crop from
+- Save/Load selected crop regions
+- Label crop results or generic folders with images
 
-  - ```bash
-    cp -R tfjs_graph_model/ ../../croppy/public/
-    ```
+## Tech Stack
 
-- copy/use labels.json from gg_classify_mobilenet_v3 folder
+Typescript React, Material UI, Next.js
 
-  - ```bash
-    cp gg_classify_mobilenet_v3/labels.json ../../croppy/src/model_files/
-    ```
+<br />
+<br />
+
+## Next.js boiler readme below
 
 ## About
 
