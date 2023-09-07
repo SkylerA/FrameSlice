@@ -23,7 +23,7 @@ const Layout = (props: Props) => {
         <title>FrameSlice</title>
         <meta
           name="description"
-          content="An easy way of cropping images from video, done client-side (in-browser) with the power of ffmpeg.wasm"
+          content="Easily crop images, gifs, or video clips from video, done in browser with the power of ffmpeg.wasm so you don't have to upload anything to a server."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
