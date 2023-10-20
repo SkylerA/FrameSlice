@@ -22,6 +22,10 @@ import { FramesParseObj, FramesParseObjToCrop } from "@/utils/parse";
 import type { ImgObj, Json } from "@/utils/data";
 import ScrollOnShow from "./ScrollOnShow";
 import dynamic from "next/dynamic";
+import { infer_no_op, type InferFn } from "@/utils/infer";
+
+// Hardcoding CropInfer to nothing for now
+const CropInferFn: InferFn = infer_no_op;
 
 const ClassLabelEditor = dynamic(() => import("./Labeling/ClassLabelEditor"), {
   ssr: false,
@@ -87,9 +91,14 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
     [videoRef]
   );
 
-  const storeCropsNoInfer = useCallback(
+  const storeCropsAndInfer = useCallback(
     async (files: string[], ffmpeg: FFmpeg) => {
       freeUrls(cropResults); // Free previous crop img memory
+
+      // Create canvas once since infer calls that check pixel data would otherwise recreate it every frame/crop
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      // console recommended willReadFrequently while testing https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
 
       const newResults = [];
       for (const file of files) {
@@ -102,10 +111,13 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         const url = URL.createObjectURL(blob);
         const { name, idx, ext } = getParseName(file) ?? "";
 
+        // Call infer function and capture custom return data
+        let returnData = await CropInferFn(url, name, idx, context);
+
         // clean up the ffmpeg file
         ffmpeg.FS("unlink", file);
 
-        newResults.push({ url, name, idx, ext });
+        newResults.push({ url, name, idx, ext, data: returnData });
 
         // update the results in chunks to avoid some thrash
         const imgChunks = 10;
@@ -154,7 +166,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         file,
         cropData,
         details,
-        storeCropsNoInfer,
+        storeCropsAndInfer,
         frameVals.outputMode,
         ffmpegProgressCb
       );
@@ -166,7 +178,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       cropData,
       startTime,
       stopTime,
-      storeCropsNoInfer,
+      storeCropsAndInfer,
     ]
     // TODO cropData is an array which will probably cause this useCallback to update everytime
   );
