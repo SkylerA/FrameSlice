@@ -3,6 +3,7 @@ import type { NextComponentType } from "next";
 import useFFmpeg, {
   Crop,
   ImgTypes,
+  ParseDetails,
   freeUrls,
   handleFFmpegProgress,
 } from "@/hooks/useFFmpeg";
@@ -45,6 +46,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
   const [vidSrc, setVidSrc] = useState<string>("");
   const [selecting, setSelecting] = useState<boolean>(false);
   const [cropResults, setCropResults] = useState<CropResult[]>([]);
+  const [parseDetails, setParseDetails] = useState<ParseDetails | undefined>(undefined);
   const [cropData, setCropData] = useState<Crop[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [stopTime, setStopTime] = useState<number>(0);
@@ -149,7 +151,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           : {};
       const limit = frameVals.limit > 0 ? { limit: frameVals.limit } : {};
 
-      const details = {
+      const details: ParseDetails = {
         ...frameRate,
         startTime,
         stopTime,
@@ -162,6 +164,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       setParseProgress(0);
       setLoading(true);
       setRunFrameVals(frameVals);
+      setParseDetails(details);
       parseVideo(
         file,
         cropData,
@@ -235,6 +238,7 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
           <Card>
             <CropResults
               cropResults={cropResults}
+              details={parseDetails}
               loading={loading}
               progress={parseProgress}
               extraBtns={[

@@ -7,7 +7,7 @@ import { fetchAndZipImg } from "@/utils/zip";
 import styles from "@/styles/CropResults.module.css";
 import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
-import { ImgTypes } from "@/hooks/useFFmpeg";
+import { ImgTypes, type ParseDetails } from "@/hooks/useFFmpeg";
 import Progress from "./Progress";
 import { emojiBtnStyle } from "@/styles/MuiStyleObjs";
 import ButtonBase from "@mui/material/ButtonBase";
@@ -15,6 +15,7 @@ import SvgIcon from "@mui/icons-material/Download";
 
 type Props = {
   cropResults: CropResult[];
+  details?: ParseDetails;
   loading: boolean;
   progress?: number;
   extraBtns?: { icon: typeof SvgIcon; toolTip?: string; cb: () => void }[];
@@ -31,7 +32,7 @@ export type CropResult = {
 
 const exportPath = (result: CropResult) => `${result.name}/${result.idx}.${result.ext}`;
 
-async function downloadCrops(results: CropResult[], includeImages: boolean = true, includeData: boolean = true) {
+async function downloadCrops(results: CropResult[], details: ParseDetails | undefined, includeImages: boolean = true, includeData: boolean = true) {
   // Create a zip of all crops in their respective label folders
   const JSZip = (await import("jszip")).default;
   const zip = new JSZip();
@@ -50,8 +51,9 @@ async function downloadCrops(results: CropResult[], includeImages: boolean = tru
 
       return obj;
     })
-    const json = JSON.stringify(updatedResults);
-    zip.file("data.json", json);
+    // Save results and parse request details
+    const dataObj = { details, results: updatedResults };
+    zip.file("data.json", JSON.stringify(dataObj, null, 4));
   }
 
   // async add images to zip
@@ -147,7 +149,7 @@ const CropResults: NextComponentType<Record<string, never>, unknown, Props> = (
             <Tooltip arrow title="Download Crops" key="dlCrops">
               <ButtonBase
                 focusRipple
-                onClick={(e) => downloadCrops(props.cropResults)}
+                onClick={(e) => downloadCrops(props.cropResults, props.details)}
               >
                 <DownloadIcon sx={emojiBtnStyle} />
               </ButtonBase>
