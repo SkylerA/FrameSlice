@@ -7,7 +7,7 @@ import { fetchAndZipImg } from "@/utils/zip";
 import styles from "@/styles/CropResults.module.css";
 import { createAutoArrayMap } from "@/utils/data";
 import { useMemo } from "react";
-import { ImgTypes, type ParseDetails } from "@/hooks/useFFmpeg";
+import { ImgTypes, getLastFFmpegCmd, type ParseDetails } from "@/hooks/useFFmpeg";
 import Progress from "./Progress";
 import { emojiBtnStyle } from "@/styles/MuiStyleObjs";
 import ButtonBase from "@mui/material/ButtonBase";
@@ -51,8 +51,12 @@ async function downloadCrops(results: CropResult[], details: ParseDetails | unde
 
       return obj;
     })
+    // add ffmpeg command to details
+    const ffmpedCmd = getLastFFmpegCmd();
+    const extraDetails = { ...details, ffmpedCmd };
+
     // Save results and parse request details
-    const dataObj = { details, results: updatedResults };
+    const dataObj = { details: extraDetails, results: updatedResults };
     zip.file("data.json", JSON.stringify(dataObj, null, 4));
   }
 

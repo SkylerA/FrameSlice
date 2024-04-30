@@ -157,6 +157,9 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
         stopTime,
         limitMode: frameVals.limitMode,
         ...limit,
+        cropData,
+        videoWidth: vidW,
+        videoHeight: vidH,
       };
       const file = videoRef.current?.src ?? "";
       setCropImgObjs([]);
@@ -182,6 +185,8 @@ const VidCropper: NextComponentType<Record<string, never>, unknown, Props> = (
       startTime,
       stopTime,
       storeCropsAndInfer,
+      vidW,
+      vidH
     ]
     // TODO cropData is an array which will probably cause this useCallback to update everytime
   );

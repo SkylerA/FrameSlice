@@ -26,6 +26,10 @@ export type ParseDetails = {
   stopTime?: number;
   frameRate?: number;
   ffmpegOverride?: string; // temp command for testing ffmpeg commands manually
+  cropData?: Crop[];
+  videoWidth?: number;
+  videoHeight?: number;
+  ffmpegCmd?: string;
 };
 
 export type RunDetails = {
@@ -39,6 +43,7 @@ export const PARSE_PREFIX = "parse";
 // currently using globals so that calling code can access mid run info even though ffmpeg is in a tight loop where state updates won't propagate
 let globalFps = -1;
 let currRun: RunDetails = { parseDetails: {}, crops: [] };
+let lastFfmpegCmd = "";
 
 // parse name out of filenames with format parse_{name}_{count}.{ext}
 function getParseName(file: string) {
@@ -64,6 +69,10 @@ function getFps() {
 
 function getRunDetails() {
   return currRun;
+}
+
+export function getLastFFmpegCmd() {
+  return lastFfmpegCmd;
 }
 
 export function handleFFmpegProgress(
@@ -277,6 +286,7 @@ export default function useFFmpeg(loadFFmpeg: boolean = true) {
       override !== ""
         ? override
         : generateFFmpegCommand("file.mp4", crops, details, output);
+    lastFfmpegCmd = cmd;
     const args = cmd.split(" ").slice(1);
     // execute ffmpeg command
     console.log("💻running ffmpeg cmd: ", cmd);
@@ -306,4 +316,4 @@ export default function useFFmpeg(loadFFmpeg: boolean = true) {
     getRunDetails,
   ] as const;
 }
-function emptyCb(progressParams: { ratio: number }): any {}
+function emptyCb(progressParams: { ratio: number }): any { }
